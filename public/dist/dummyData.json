@@ -1,0 +1,26 @@
+[
+  {
+    "id":0,
+    "name":"Stage 1",
+    "div_content": "Stage 1 content",
+    "sub_nav":[
+      {
+        "id":0,
+        "title":"S1_Child 1",
+        "content": "S1_Child 1 content"
+      }
+    ]
+  } ,
+  {
+    "id":1,
+    "name":"Stage 2",
+    "div_content": "Stage 2 content",
+    "sub_nav":[
+      {
+        "id":1,
+        "title":"S2_Child 1",
+        "content": "<input id='name' type=text/>"
+      }
+    ]
+  }
+]

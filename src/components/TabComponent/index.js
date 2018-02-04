@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import Tabs from 'react-responsive-tabs';
+import renderHTML from 'react-render-html';
 
 import './styles.css';
 
@@ -14,31 +15,53 @@ export class TabComponent extends PureComponent {
             items: [],
             selectedTabKey: 0,
         };
+        this.getSimpleTabs = this.getSimpleTabs.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+
     }
 
-    getSimpleTabs(dummyData){
-        return dummyData.map(({ name, description }, index) => ({
-            key: index,
-            title: name,
-            getContent: description
-        }));
+
+
+    getSimpleTabs(sub_nav){
+        return ({
+                    showMore: true,
+                    transform: true,
+                    showInkBar: true,
+                    items:sub_nav.map(({id,title,content},index) => ({
+                        key:index,
+                        title:title,
+                        content:<div>{renderHTML(content)}</div>
+
+                    })),
+                    selectedTabKey: 0
+        });
     }
     componentDidMount() {
-        fetch("https://gist.githubusercontent.com/jakub-c/95cc4648a34ddd7e52a1b96c45fc6975/raw/98b979e9498e22ce8d6ea523d373911537a92336/weather%2520raw%2520response")
+        fetch("./dist/dummyData.json")
             .then(res => res.json())
             .then(
                 (result) => {
                     console.log(result)
                     this.setState({
                         isLoaded: true,
-                        items: result.list.map(({ name, id }, index) => ({
+                        items: result.map(({ name,div_content,sub_nav}, index) => ({
                             key: index,
                             title: name,
-                            getContent:()=> id
+                            content:
+                            <div>
+                                <div>{renderHTML(div_content)}</div>
+                                    <br/>
+                                <div className={"box"}>
+                                    <div className={"box-body basic__tabs nav-tabs-custom"}>
+                                        <Tabs {...this.getSimpleTabs(sub_nav)}/>
+                                    </div>
+                                </div>
+                            </div>
+
                         }))
                     });
                 },
-                // Note: it's important to handle errors here
+                // Note: it'smes important to handle errors here
                 // instead of a catch() block so that we don't swallow
                 // exceptions from actual bugs in components.
                 (error) => {
@@ -50,10 +73,19 @@ export class TabComponent extends PureComponent {
                     });
                 }
             )
-        console.log('mount it!');
+
 
     }
+      handleSubmit(event) {
+            event.preventDefault();
+            const form = new FormData(document.getElementById('form'));
+            fetch("https://www.mocky.io/v2/5185415ba171ea3a00704eed", {
+              method: "PUT",
+              body: form
+            });
 
+
+      }
     onChangeProp = propsName =>
         evt => {
             this.setState({ [propsName]: evt.target.type === 'checkbox' ? evt.target.checked : +evt.target.value });
@@ -64,10 +96,8 @@ export class TabComponent extends PureComponent {
         const { showMore, transform, showInkBar, selectedTabKey } = this.state;
         return (
             <div class="box box-danger col-md-9">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Stage 1</h3>
-                </div>
-                <div class="box-body">
+               <form id="form" onSubmit={this.handleSubmit}>
+               <div class="box-body">
                     <div className="basic__wrapper">
                         <div className="basic__tabs nav-tabs-custom">
                             <Tabs {...this.state} />
@@ -77,13 +107,14 @@ export class TabComponent extends PureComponent {
                 <div class="box-footer">
                     <div class="margin">
                         <div class="btn-group">
-                            <button type="button" class="btn btn-sm btn-warning btn-flat pull-left" >Save</button>
+                            <button type="submit" class="btn btn-sm btn-warning btn-flat pull-left" >Save</button>
                         </div>
                         <div class="btn-group">
                             <button type="button" class="btn btn-sm btn-info btn-flat pull-left">Next</button>
                         </div>
                     </div>
                 </div>
+               </form>
             </div>
         );
     }
