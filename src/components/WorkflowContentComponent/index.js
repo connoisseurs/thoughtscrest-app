@@ -7,9 +7,6 @@ class WorkflowContentComponent extends Component {
         return(
             <div>
                 <div id="row">
-                    <SampleBoxComponent/>
-                </div>
-                <div id="row">
                      <TabComponent/>
                 </div>
             </div>
