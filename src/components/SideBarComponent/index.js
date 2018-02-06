@@ -45,6 +45,9 @@ class SideBarComponent extends Component {
                         <Link to="/workflow"><i class="fa fa-link"></i> <span>Workflow</span></Link>
                     </li>
                     <li class="treeview">
+                        <Link to="/workflowjs"><i class="fa fa-link"></i> <span>Workflow JS</span></Link>
+                    </li>
+                    <li class="treeview">
                         <Link to="/formElements"><i class="fa fa-link"></i> <span>FormElements</span></Link>
                     </li>
                     <li class="treeview">

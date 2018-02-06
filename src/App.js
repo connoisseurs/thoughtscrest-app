@@ -4,6 +4,7 @@ import HeaderComponent from "./components/HeaderComponent"
 import SideBarComponent from "./components/SideBarComponent";
 import FooterComponent from "./components/FooterComponent";
 import WorkflowContentComponent from "./components/WorkflowContentComponent";
+import WorkflowJsContentComponent from "./components/WorkflowJsContentComponent";
 import AboutComponent from "./components/AboutComponent";
 import NotificationGridComponent from "./components/NotificationGridComponent";
 
@@ -23,6 +24,7 @@ class App extends Component {
                       <Switch>
                           <Route path='/about' component={AboutComponent}/>
                           <Route path='/workflow' component={WorkflowContentComponent}/>
+                          <Route path='/workflowjs' component={WorkflowJsContentComponent}/>
                           <Route path='/notificationGrid' component={NotificationGridComponent}/>
                           <Route path='/formElements' component={FormElementsComponent}/>
                       </Switch>
