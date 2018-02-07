@@ -2,25 +2,40 @@
   {
     "id":0,
     "name":"Stage 1",
-    "div_content": "Stage 1 content",
+    "html_content": "<h1>Hello World!</h1>",
     "sub_nav":[
       {
         "id":0,
-        "title":"S1_Child 1",
-        "content": "S1_Child 1 content"
+        "name":"Child_Stage 1",
+        "form_content": {
+          "jsonSchema": {"title": "A single-field form",
+            "type": "string"},
+          "uiSchema": {},
+          "formData":"initial value"
+        }
       }
     ]
   } ,
   {
     "id":1,
     "name":"Stage 2",
-    "div_content": "Stage 2 content",
+    "form_content": {
+      "jsonSchema": {"title": "A single-field form",
+      "type": "string"},
+      "uiSchema": {},
+      "formData":"initial value"
+    },
     "sub_nav":[
       {
         "id":1,
-        "title":"S2_Child 1",
-        "content": "<input id='name' type=text/>"
+        "name":"S2_Child 1",
+        "html_content": "<input id='name' type=text/>"
       }
     ]
+  },
+  {
+    "id":2,
+    "name":"Stage 3",
+    "html_content":"<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>"
   }
 ]

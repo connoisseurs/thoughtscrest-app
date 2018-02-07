@@ -1,10 +1,13 @@
 import React, { PureComponent } from 'react';
 import Tabs from 'react-responsive-tabs';
 import renderHTML from 'react-render-html';
+import Form from "react-jsonschema-form";
 
 import './styles.css';
-
 export class TabComponent extends PureComponent {
+
+
+
     constructor(props) {
         super(props);
 
@@ -16,8 +19,7 @@ export class TabComponent extends PureComponent {
             selectedTabKey: 0,
         };
         this.getSimpleTabs = this.getSimpleTabs.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
-
+        this.getStageContent = this.getStageContent.bind(this);
     }
 
 
@@ -27,15 +29,33 @@ export class TabComponent extends PureComponent {
                     showMore: true,
                     transform: true,
                     showInkBar: true,
-                    items:sub_nav.map(({id,title,content},index) => ({
-                        key:index,
-                        title:title,
-                        content:<div>{renderHTML(content)}</div>
+                    items:sub_nav.map(({name,form_content,html_content,sub_nav},index) => ({
+                        key: index,
+                        title: name,
+                        content: this.getStageContent(form_content,html_content,sub_nav)
 
                     })),
                     selectedTabKey: 0
         });
     }
+    getStageContent(form_content,html_content,sub_nav){
+        return(
+             <div>
+              {html_content? renderHTML(html_content) : ""}
+              {form_content? ( <div><Form schema={form_content.jsonSchema} formData={form_content.formData}/></div> ) : ""}
+              <br/>
+              {sub_nav ?
+              (<div className={"box"}>
+              <div className={"box-body basic__tabs nav-tabs-custom"}>
+              <Tabs {...this.getSimpleTabs(sub_nav)}/>
+              </div>
+              </div>) : ""}
+              </div>
+        );
+    }
+
+
+
     componentDidMount() {
         fetch("./dist/dummyData.json")
             .then(res => res.json())
@@ -44,19 +64,10 @@ export class TabComponent extends PureComponent {
                     console.log(result)
                     this.setState({
                         isLoaded: true,
-                        items: result.map(({ name,div_content,sub_nav}, index) => ({
+                        items: result.map(({ name,form_content,html_content,sub_nav}, index) => ({
                             key: index,
                             title: name,
-                            content:
-                            <div>
-                                <div>{renderHTML(div_content)}</div>
-                                    <br/>
-                                <div className={"box"}>
-                                    <div className={"box-body basic__tabs nav-tabs-custom"}>
-                                        <Tabs {...this.getSimpleTabs(sub_nav)}/>
-                                    </div>
-                                </div>
-                            </div>
+                            content: this.getStageContent(form_content,html_content,sub_nav)
 
                         }))
                     });
@@ -76,16 +87,7 @@ export class TabComponent extends PureComponent {
 
 
     }
-      handleSubmit(event) {
-            event.preventDefault();
-            const form = new FormData(document.getElementById('form'));
-            fetch("https://www.mocky.io/v2/5185415ba171ea3a00704eed", {
-              method: "PUT",
-              body: form
-            });
 
-
-      }
     onChangeProp = propsName =>
         evt => {
             this.setState({ [propsName]: evt.target.type === 'checkbox' ? evt.target.checked : +evt.target.value });
