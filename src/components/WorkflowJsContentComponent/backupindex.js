@@ -47,6 +47,18 @@ export class WorkflowJsContentComponent extends PureComponent {
       rect2.translate(300);
       this.graph.addCell(rect2);
 
+      // const link = new joint.dia.Link({
+      //     source: { id: rect.id },
+      //     target: { id: rect2.id },
+      //     attrs: {}
+      // });
+      // link.attr({
+      //     '.connection': { stroke: 'blue' },
+      //     '.marker-source': { fill: 'red', d: 'M 10 0 L 0 5 L 10 10 z' },
+      //     '.marker-target': { fill: 'yellow', d: 'M 10 0 L 0 5 L 10 10 z' }
+      // });
+      // this.graph.addCell(link);
+
       paper.getDefaultLink().set({
           source: { id: rect.id },
           target: { id: rect2.id },
@@ -72,10 +84,34 @@ export class WorkflowJsContentComponent extends PureComponent {
       });
       this.graph.addCell(start);
 
+      // var stage =  new Stage({
+      //     position: { x: 350, y: 100 },
+      //     size: { width: 50, height: 50 },
+      //     attrs: { diamond: { width: 100, height: 30 } }
+      // });
+      // stage.attr({
+      //     rect: { fill: 'white', 'stroke-width': 2, stroke: 'white' },
+      //     text: {
+      //         text: 'Stage 1', fill: 'black',
+      //         'font-size': 18, 'font-weight': 'bold',
+      //         'font-variant': 'small-caps',
+      //         'text-transform': 'capitalize'
+      //     }
+      // });
       var stage =  new Stage({
           x: 250, y: 100, w: 100, h: 100, t: 'Stage 1'
       });
       this.graph.addCell(stage);
+
+      // const block1 = new joint.shapes.basic.Rect({
+      //     position: { x: 450, y: 100 },
+      //     size: { width: 100, height: 30 },
+      //     attrs: {
+      //         rect: { fill: 'white' },
+      //         text: { text: 'Block 1', fill: 'black' }
+      //     }
+      // });
+      // this.graph.addCell(block1);
 
       const block1 = Block({x: 450, y: 100, w: 100, h: 30, t: 'block from object'});
       this.graph.addCell(block1);
@@ -100,6 +136,29 @@ export class WorkflowJsContentComponent extends PureComponent {
       });
       this.graph.addCell(end);
 
+
+
+      // const link1 = new joint.dia.Link({
+      //     source: { id: start.id },
+      //     target: { id: block1.id },
+      //     attrs: {}
+      // });
+      // this.graph.addCell(link1);
+      //
+      // const link2 = new joint.dia.Link({
+      //     source: { id: block1.id },
+      //     target: { id: block2.id },
+      //     attrs: {}
+      // });
+      // this.graph.addCell(link2);
+      //
+      // const link3 = new joint.dia.Link({
+      //     source: { id: block2.id },
+      //     target: { id: end.id },
+      //     attrs: {}
+      // });
+      // this.graph.addCell(link3);
+
       paper.getDefaultLink().set({
           source: { id: start.id },
           target: { id: stage.id },
@@ -120,6 +179,8 @@ export class WorkflowJsContentComponent extends PureComponent {
           target: { id: end.id },
       }).addTo(this.graph);
 
+      // this.graph.addCells([rect, rect2, link, polygon, start, block1, block2, end, link1, link2, link3]);
+      // this.graph.addCells(this.cells);
     }
 
     render() {
@@ -128,5 +189,21 @@ export class WorkflowJsContentComponent extends PureComponent {
       );
     }
 }
+
+// joint.shapes.basic.Stage = joint.shapes.basic.Generic.extend({
+//
+//     markup: '<g class="rotatable"><g class="scalable"><rect/></g><text/></g>',
+//
+//     defaults: joint.util.deepSupplement({
+//
+//         type: 'basic.Rect',
+//         attrs: {
+//             'rect': { fill: '#FFFFFF', stroke: 'white', width: 1, height: 1,transform: 'rotate(45)' },
+//             'text': { 'font-size': 14, text: '', 'ref-x': .5, 'ref-y': .5, ref: 'rect', 'y-alignment': 'middle', 'x-alignment': 'middle', fill: 'black', 'font-family': 'Arial, helvetica, sans-serif' }
+//         }
+//
+//     }, joint.shapes.basic.Generic.prototype.defaults)
+// });
+
 
 export default WorkflowJsContentComponent;
