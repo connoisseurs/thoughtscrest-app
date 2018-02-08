@@ -1,0 +1,28 @@
+{
+  "name" : "sample workflow",
+  "stages" : [
+    {
+      "id" : 1,
+      "name" : "stage 1",
+      "description" : "stage 1 for test",
+      "blocks" : [
+        {
+          "id" : 1,
+          "name" : "block hellow world",
+          "props" : {
+            "name" : "hello",
+            "key" : "world"
+          }
+        },
+        {
+          "id" : 2,
+          "name" : "block hello jointjs",
+          "props" : {
+            "name" : "hello",
+            "key" : "jointjs"
+          }
+        }
+      ]
+    }
+  ]
+}
