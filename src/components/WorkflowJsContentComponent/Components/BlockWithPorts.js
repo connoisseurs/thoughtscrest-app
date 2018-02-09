@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import joint from 'jointjs';
 
-export function Block (props) {
+export function BlockWithPorts (props) {
   return new joint.shapes.devs.Model({
     type: 'devs.Model',
     position: {x: props.x, y: props.y},
@@ -17,8 +17,9 @@ export function Block (props) {
       '.element-node' : {
         'data-color': 'pink'
       }
-    }
+    },
+    inPorts: ['center']
   });
 }
 
-export default Block;
+export default BlockWithPorts;

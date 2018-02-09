@@ -16,10 +16,88 @@
         },
         {
           "id" : 2,
+          "name" : "block hello js",
+          "props" : {
+            "name" : "hello",
+            "key" : "js"
+          }
+        },
+        {
+          "id" : 3,
+          "name" : "block hello reactjs",
+          "props" : {
+            "name" : "hello",
+            "key" : "reactjs"
+          }
+        },
+        {
+          "id" : 4,
           "name" : "block hello jointjs",
           "props" : {
             "name" : "hello",
             "key" : "jointjs"
+          }
+        }
+      ]
+    },
+    {
+      "id" : 2,
+      "name" : "stage 2",
+      "description" : "stage 2 for test",
+      "blocks" : [
+        {
+          "id" : 1,
+          "name" : "block 1 hellow stage 2",
+          "props" : {
+            "name" : "hello",
+            "key" : "stage 2 from block 1"
+          }
+        },
+        {
+          "id" : 2,
+          "name" : "block 2 hellow stage 2",
+          "props" : {
+            "name" : "hello",
+            "key" : "stage 2 from block 2"
+          }
+        }
+      ]
+    },
+    {
+      "id" : 3,
+      "name" : "stage 3",
+      "description" : "stage 3 for test",
+      "blocks" : [
+        {
+          "id" : 1,
+          "name" : "block 1 hellow stage 3",
+          "props" : {
+            "name" : "hello",
+            "key" : "stage 3 from block 1"
+          }
+        },
+        {
+          "id" : 2,
+          "name" : "block 2 hellow stage 3",
+          "props" : {
+            "name" : "hello",
+            "key" : "stage 3 from block 2"
+          }
+        },
+        {
+          "id" : 3,
+          "name" : "block 3 hellow stage 3",
+          "props" : {
+            "name" : "hello",
+            "key" : "stage 3 from block 3"
+          }
+        },
+        {
+          "id" : 4,
+          "name" : "block 4 hellow stage 3",
+          "props" : {
+            "name" : "hello",
+            "key" : "stage 3 from block 4"
           }
         }
       ]

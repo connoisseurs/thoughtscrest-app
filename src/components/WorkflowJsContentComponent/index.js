@@ -1,6 +1,9 @@
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import joint from 'jointjs';
+import Block from "./Components/Block";
+import BlockWithPorts from "./Components/BlockWithPorts";
+import Stage from "./Components/Stage";
 import './joint.core.css';
 import './style.css';
 
@@ -15,6 +18,8 @@ export class WorkflowJsContentComponent extends PureComponent {
 		    this.cancells=[];
         this.palcells=[];
         this.addCell = this.addCell.bind(this);
+        this.populateWorkflow = this.populateWorkflow.bind(this);
+        this.updateCoordinates = this.updateCoordinates.bind(this);
         this.populateCanvas = this.populateCanvas.bind(this);
         this.populatePalette = this.populatePalette.bind(this);
     }
@@ -29,7 +34,8 @@ export class WorkflowJsContentComponent extends PureComponent {
                       isLoaded: true,
                       workflow: result
                   });
-                  this.populateCanvas();
+                  this.populateWorkflow();
+                  //this.populateCanvas();
                   this.populatePalette();
               },
               (error) => {
@@ -60,6 +66,9 @@ export class WorkflowJsContentComponent extends PureComponent {
         gridSize: 20,
         clickThreshold: 1
       });
+      this.canpaper.on('cell:pointerclick', function(e){
+        alert(e.el.textContent+' clicked');
+      });
       // var svgZoom = svgPanZoom('#canvas svg', {
       //   center: false,
       //   zoomEnabled: true,
@@ -81,12 +90,102 @@ export class WorkflowJsContentComponent extends PureComponent {
       // })();
     }
 
+    populateWorkflow(){
+      var x = 5, y = 5, ewidth = 140, offset = 50, pwidth = this.canvas.offsetWidth, pheight = this.canvas.offsetHeight;
+      var maxrowcount = Math.floor(pwidth / (ewidth + offset)), rowcount = 0;
+      var elements = [];
+      var props = {};
+      props.pwidth = pwidth;
+      props.rowcount = rowcount;
+      props.x = x;
+      props.y = y;
+      props.ewidth = ewidth;
+      props.offset = offset;
+      props.maxrowcount = maxrowcount;
+      props.reverse = false;
+      props.dir = "ltr";
+      for(var idx in this.state.workflow.stages){
+        var sitem = this.state.workflow.stages[idx];
+        var stage = getStage(props.x, props.y, sitem.name);
+        elements.push(stage);
+        this.cangraph.addCell(stage);
+        props = this.updateCoordinates(props);
+        // rowcount++;
+        // x = x + (ewidth + offset);
+        // if(rowcount == maxrowcount){
+        //   rowcount = 0;
+        //   x = 5;
+        //   y = y + 100;
+        // }
+        for(var idy in sitem.blocks){
+          var bitem = sitem.blocks[idy];
+          var block = getBlockWithPorts(props.x, props.y, bitem.name);
+          elements.push(block);
+          this.cangraph.addCell(block);
+          props = this.updateCoordinates(props);
+          // rowcount++;
+          // x = x + (ewidth + offset);
+          // if(rowcount == maxrowcount){
+          //   rowcount = 0;
+          //   y = y + 100;
+          // }
+        }
+      }
+      for(var idz = 0; idz < elements.length - 1;idz++){
+        var link = new joint.dia.Link({
+          source: {
+            id: elements[idz].id,
+            port: 'center'
+          },
+          target: {
+            id: elements[idz + 1].id,
+            port: 'center'
+          }
+        });
+        this.cangraph.addCell(link);
+      }
+    }
+
+    updateCoordinates(props){
+      var rowcount = props.rowcount, x = props.x, y = props.y, pwidth = props.pwidth,
+      ewidth = props.ewidth, offset = props.offset, maxrowcount = props.maxrowcount;
+      var reverse = props.reverse, dir = props.dir;
+      rowcount++;
+      if(dir === "ltr"){
+          x = x + (ewidth + offset);
+      }else{
+          x = x - (ewidth + offset);
+      }
+
+      if(rowcount == maxrowcount){
+        rowcount = 0;
+        if(dir === "ltr"){
+            x = pwidth - 150;
+            dir = "rtl";
+        }else{
+            x = 5;
+            dir = "ltr";
+        }
+        y = y + 100;
+      }
+
+      props.rowcount = rowcount;
+      props.x = x;
+      props.y = y;
+      props.ewidth = ewidth;
+      props.offset = offset;
+      props.maxrowcount = maxrowcount;
+      props.reverse = reverse;
+      props.dir = dir;
+      return props;
+    }
+
     populateCanvas(){
-      this.cancells[0] = getBlockWithPorts(20,20,'block 1 new');
+      this.cancells[0] = getBlockWithPorts(20,20,'block 1 newccc');
       this.cancells[0].translate(140, 100);
       this.cancells[1] = this.cancells[0].clone();
       this.cancells[1].translate(300, 60);
-      this.cancells[1].attr('.rectlabel/text', 'blok 2');
+      this.cancells[1].attr('.rectlabel/text', 'blok 2 ssfsf');
       this.cangraph.addCells(this.cancells);
 
       var link = new joint.dia.Link({
@@ -105,19 +204,39 @@ export class WorkflowJsContentComponent extends PureComponent {
         alert(e.el.textContent+' clicked');
       });
 
-      const polygon = getStage(500, 30, 'my polygon new');
+      const polygon = getStage(140, 10, 'my polygon new');
       this.cangraph.addCell(polygon);
     }
 
     populatePalette() {
-      var tx = 5, ty = 5, tz = 150; var block = null, idx = 0, item = null;
-      for(var idx in this.state.workflow.stages[0].blocks){
-        item = this.state.workflow.stages[0].blocks[idx];
-        block = getBlock(1,1, item.name)
-        block.translate(tx, ty);
-        this.palgraph.addCell(block);
-        tx = tx + tz;
+      var x = 5, y = 5, ewidth = 140, offset = 10, pwidth = this.canvas.offsetWidth, pheight = this.canvas.offsetHeight;
+      var maxrowcount = Math.floor(pwidth / (ewidth + offset)), rowcount = 0;
+      var elements = [];
+      for(var idx in this.state.workflow.stages){
+        var sitem = this.state.workflow.stages[idx];
+        for(var idy in sitem.blocks){
+          var bitem = sitem.blocks[idy];
+          var block = getBlock(x, y, bitem.name);
+          elements.push(block);
+          this.palgraph.addCell(block);
+          rowcount++;
+          x = x + (ewidth + offset);
+          if(rowcount == maxrowcount){
+            rowcount = 0;
+            x = 5;
+            y = y + 70;
+          }
+        }
       }
+
+      // var tx = 5, ty = 5, tz = 150; var block = null, idx = 0, item = null;
+      // for(var idx in this.state.workflow.stages[0].blocks){
+      //   item = this.state.workflow.stages[0].blocks[idx];
+      //   block = getBlock(1,1, item.name)
+      //   block.translate(tx, ty);
+      //   this.palgraph.addCell(block);
+      //   tx = tx + tz;
+      // }
     }
 
     addCell() {
@@ -132,7 +251,7 @@ export class WorkflowJsContentComponent extends PureComponent {
 
     render() {
       return(
-        <div>
+        <div style={{width : "100%"}}>
           <div id="canvas" ref="canvasholder"></div>
           <button id="addCell" onClick={this.addCell}>Add Node</button>
           <button id="save" type="button" class="btn btn-sm btn-info btn-flat pull-right">Save</button>
@@ -145,53 +264,15 @@ export class WorkflowJsContentComponent extends PureComponent {
 }
 
 function getStage(posx, posy, name){
-  return new joint.shapes.basic.Rhombus({
-      position: { x: posx, y: posy },
-      size: { width: 100, height: 100 },
-      attrs: {
-          path: { d: 'M 50 0 L 0 20 0 80 50 100 100 80 100 20 z', fill: 'pink'},
-          text: { text: name, fill: 'black' }
-      }
-  });
+  return Stage({x: posx, y: posy, name: name});
 }
 
 function getBlockWithPorts(posx, posy, name){
-  return new joint.shapes.devs.Model({
-    type: 'devs.Model',
-    position: {x: posx, y: posy},
-    attrs: {
-      '.rectbody': {
-        width: '140',
-        height: '60'
-      },
-      '.rectlabel': {
-        text: name,
-      },
-      '.element-node' : {
-        'data-color': 'pink'
-      }
-    },
-    inPorts: ['center']
-  });
+  return BlockWithPorts({x: posx, y: posy, name: name});
 }
 
 function getBlock(posx, posy, name){
-  return new joint.shapes.devs.Model({
-    type: 'devs.Model',
-    position: {x: posx, y: posy},
-    attrs: {
-      '.rectbody': {
-        width: '140',
-        height: '60'
-      },
-      '.rectlabel': {
-        text: name,
-      },
-      '.element-node' : {
-        'data-color': 'pink'
-      }
-    }
-  });
+  return Block({x: posx, y: posy, name: name});
 }
 
 function getStart(posx, posy){
