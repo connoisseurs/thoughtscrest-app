@@ -1,0 +1,69 @@
+export const jsonSchema = {
+  "type": "object",
+  "properties": {
+    "facility_id": {
+      "type": "string"
+    },
+    "facility_type": {
+      "type": "string"
+    },
+    "facility_desc": {
+      "type": "string"
+    },
+    "facility_purpose": {
+      "type": "string"
+    },
+    "total_cost": {
+      "type": "string"
+    },
+    "customer_margin": {
+      "type": "string"
+    },
+    "requested_amount": {
+      "type": "string"
+    },
+    "loan_currency": {
+      "type": "string"
+    },
+    "eligiblity_amount": {
+      "type": "string"
+    },
+    "loan_term": {
+      "type": "string"
+    },
+    "loan_type": {
+      "type": "string"
+    },
+    "interest_rate": {
+      "type": "string"
+    },
+    "repayment_type": {
+      "type": "string"
+    },
+    "schedule_id": {
+      "type": "string"
+    },
+    "lead_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "facility_id",
+    "facility_type",
+    "facility_desc",
+    "facility_purpose",
+    "total_cost",
+    "customer_margin",
+    "requested_amount",
+    "loan_currency",
+    "eligiblity_amount",
+    "loan_term",
+    "loan_type",
+    "interest_rate",
+    "repayment_type",
+    "schedule_id",
+    "lead_id"
+  ]
+}
+
+export default jsonSchema;
