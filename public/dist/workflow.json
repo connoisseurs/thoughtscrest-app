@@ -9,7 +9,8 @@
         {
           "id" : 1,
           "name" : "block hellow world",
-          "props" : {
+          "description" : "block 1 for stage 1",
+          "properties" : {
             "name" : "hello",
             "key" : "world"
           }
@@ -17,7 +18,8 @@
         {
           "id" : 2,
           "name" : "block hello js",
-          "props" : {
+          "description" : "block 2 for stage 1",
+          "properties" : {
             "name" : "hello",
             "key" : "js"
           }
@@ -25,7 +27,7 @@
         {
           "id" : 3,
           "name" : "block hello reactjs",
-          "props" : {
+          "properties" : {
             "name" : "hello",
             "key" : "reactjs"
           }
@@ -33,7 +35,7 @@
         {
           "id" : 4,
           "name" : "block hello jointjs",
-          "props" : {
+          "properties" : {
             "name" : "hello",
             "key" : "jointjs"
           }
@@ -48,7 +50,7 @@
         {
           "id" : 1,
           "name" : "block 1 hellow stage 2",
-          "props" : {
+          "properties" : {
             "name" : "hello",
             "key" : "stage 2 from block 1"
           }
@@ -56,7 +58,7 @@
         {
           "id" : 2,
           "name" : "block 2 hellow stage 2",
-          "props" : {
+          "properties" : {
             "name" : "hello",
             "key" : "stage 2 from block 2"
           }
@@ -71,7 +73,7 @@
         {
           "id" : 1,
           "name" : "block 1 hellow stage 3",
-          "props" : {
+          "properties" : {
             "name" : "hello",
             "key" : "stage 3 from block 1"
           }
@@ -79,7 +81,7 @@
         {
           "id" : 2,
           "name" : "block 2 hellow stage 3",
-          "props" : {
+          "properties" : {
             "name" : "hello",
             "key" : "stage 3 from block 2"
           }
@@ -87,7 +89,7 @@
         {
           "id" : 3,
           "name" : "block 3 hellow stage 3",
-          "props" : {
+          "properties" : {
             "name" : "hello",
             "key" : "stage 3 from block 3"
           }
@@ -95,7 +97,7 @@
         {
           "id" : 4,
           "name" : "block 4 hellow stage 3",
-          "props" : {
+          "properties" : {
             "name" : "hello",
             "key" : "stage 3 from block 4"
           }
