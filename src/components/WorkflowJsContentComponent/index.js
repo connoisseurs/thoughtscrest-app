@@ -1,16 +1,29 @@
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
+import Modal from 'react-modal';
 import joint from 'jointjs';
 import Block from "./Components/Block";
 import BlockWithPorts from "./Components/BlockWithPorts";
 import Stage from "./Components/Stage";
 import './joint.core.css';
 import './style.css';
+import $ from 'jquery';
+
+const customStyles = {
+  content : {
+    top                   : '50%',
+    left                  : '50%',
+    right                 : 'auto',
+    bottom                : 'auto',
+    marginRight           : '-50%',
+    transform             : 'translate(-50%, -50%)'
+  }
+};
 
 export class WorkflowJsContentComponent extends PureComponent {
     constructor(props) {
         super(props);
-        this.state = {workflow : {}, isLoaded : false};
+        this.state = {workflow : {}, isLoaded : false, modalIsOpen: false, currentElement: {}};
         this.cangraph = new joint.dia.Graph();
         this.palgraph = new joint.dia.Graph();
         this.canpaper = null;
@@ -22,6 +35,9 @@ export class WorkflowJsContentComponent extends PureComponent {
         this.updateCoordinates = this.updateCoordinates.bind(this);
         this.populateCanvas = this.populateCanvas.bind(this);
         this.populatePalette = this.populatePalette.bind(this);
+        this.openModal = this.openModal.bind(this);
+        this.afterOpenModal = this.afterOpenModal.bind(this);
+        this.closeModal = this.closeModal.bind(this);
     }
 
     componentDidMount(){
@@ -67,8 +83,56 @@ export class WorkflowJsContentComponent extends PureComponent {
         clickThreshold: 1
       });
       this.canpaper.on('cell:pointerclick', function(e){
-        alert(e.el.textContent+' clicked');
-      });
+        alert(e.el.textContent +' clicked');
+        this.openModal(e.el);
+      }.bind(this));
+
+      this.palpaper.on('cell:pointerdown', function(cellView, e, x, y) {
+        $('body').append('<div id="flyPaper" ref="flypaper" style="position:fixed;z-index:100;opacity:.7;pointer-event:none;"></div>');
+        var flyGraph = new joint.dia.Graph,
+          flyPaper = new joint.dia.Paper({
+            el: $('#flyPaper'),
+            model: flyGraph,
+            interactive: false
+          }),
+          flyShape = cellView.model.clone(),
+          pos = cellView.model.position(),
+          offset = {
+            x: x - pos.x,
+            y: y - pos.y
+          };
+
+        flyShape.position(0, 0);
+        flyGraph.addCell(flyShape);
+        $("#flyPaper").offset({
+          left: e.pageX - offset.x,
+          top: e.pageY - offset.y
+        });
+        $('body').on('mousemove.fly', function(e) {
+          $("#flyPaper").offset({
+            left: e.pageX - offset.x,
+            top: e.pageY - offset.y
+          });
+        }.bind(this));
+        $('body').on('mouseup.fly', function(e) {
+          console.log("element : " + e)
+          console.log("el from paper : " + this.canpaper)
+          var x = e.pageX,
+            y = e.pageY,
+            target = this.canpaper.$el.offset();
+
+          // Dropped over paper ?
+          if (x > target.left && x < target.left + this.canpaper.$el.width() && y > target.top && y < target.top + this.canpaper.$el.height()) {
+            var s = flyShape.clone();
+            s.position(x - target.left - offset.x, y - target.top - offset.y);
+            this.cangraph.addCell(s);
+          }
+          $('body').off('mousemove.fly').off('mouseup.fly');
+          flyShape.remove();
+          $('#flyPaper').remove();
+        }.bind(this));
+      }.bind(this));
+
       // var svgZoom = svgPanZoom('#canvas svg', {
       //   center: false,
       //   zoomEnabled: true,
@@ -89,6 +153,21 @@ export class WorkflowJsContentComponent extends PureComponent {
       //   });
       // })();
     }
+
+    openModal(el) {
+      this.setState({modalIsOpen: true, currentElement: el});
+
+    }
+
+    afterOpenModal() {
+      // references are now sync'd and can be accessed.
+    //  this.subtitle.style.color = '#f00';
+    }
+
+    closeModal() {
+      this.setState({modalIsOpen: false});
+    }
+
 
     populateWorkflow(){
       var x = 5, y = 5, ewidth = 140, offset = 50, pwidth = this.canvas.offsetWidth, pheight = this.canvas.offsetHeight;
@@ -216,7 +295,7 @@ export class WorkflowJsContentComponent extends PureComponent {
         var sitem = this.state.workflow.stages[idx];
         for(var idy in sitem.blocks){
           var bitem = sitem.blocks[idy];
-          var block = getBlock(x, y, bitem.name);
+          var block = getBlockWithPorts(x, y, bitem.name);
           elements.push(block);
           this.palgraph.addCell(block);
           rowcount++;
@@ -258,6 +337,16 @@ export class WorkflowJsContentComponent extends PureComponent {
           <button id="amend" type="button" class="btn btn-sm btn-info btn-flat pull-right">Amend</button>
           <button id="info" type="button" class="btn btn-sm btn-info btn-flat pull-right">Info</button>
           <div id="palette" ref="paletteholder"></div>
+          <Modal
+            isOpen={this.state.modalIsOpen}
+            onAfterOpen={this.afterOpenModal}
+            onRequestClose={this.closeModal}
+            style={customStyles}
+            contentLabel="Example Modal">
+            <h2 ref={subtitle => this.subtitle = subtitle}>{this.state.currentElement.textContent}</h2>
+            <div>Properties of {this.state.currentElement.textContent}</div>
+            <button onClick={this.closeModal} class="btn btn-sm btn-info btn-flat pull-right">close</button>
+          </Modal>
         </div>
       );
     }
