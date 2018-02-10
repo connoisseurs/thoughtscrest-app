@@ -1,0 +1,17 @@
+{
+  "facility_id": "facID_1",
+  "facility_type": "Home Loan",
+  "facility_desc": "Home Loan for 10 years",
+  "facility_purpose": "Loan",
+  "total_cost": "1000000",
+  "customer_margin": "0",
+  "requested_amount": "1000000",
+  "loan_currency": "EUR",
+  "eligiblity_amount": "80000",
+  "loan_term": "12",
+  "loan_type": "EMI",
+  "interest_rate": "10",
+  "repayment_type": "Monthly",
+  "schedule_id": "123",
+  "lead_id": "12345"
+}

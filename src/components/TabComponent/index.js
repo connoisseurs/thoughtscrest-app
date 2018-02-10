@@ -1,11 +1,14 @@
-import React, { PureComponent } from 'react';
+import React, {PureComponent} from 'react';
 import Tabs from 'react-responsive-tabs';
 import renderHTML from 'react-render-html';
 import Form from "react-jsonschema-form";
+import uiSchema from './uiSchema/uiSchema'
+import jsonSchema from './jsonSchema/jsonSchema'
+
 
 import './styles.css';
-export class TabComponent extends PureComponent {
 
+export class TabComponent extends PureComponent {
 
 
     constructor(props) {
@@ -16,44 +19,69 @@ export class TabComponent extends PureComponent {
             transform: true,
             showInkBar: true,
             items: [],
-            selectedTabKey: 0,
+            selectedTabKey: 0
         };
         this.getSimpleTabs = this.getSimpleTabs.bind(this);
         this.getStageContent = this.getStageContent.bind(this);
+        this.getDefaultTab = this.getDefaultTab.bind(this);
+        this.getBlockContent = this.getBlockContent.bind(this);
+
+    }
+
+    getJsonSchema() {
+        fetch("./dist/Facility Detail/jsonSchema.js")
+            .then(res => res.json())
+            .then((result) => {
+                    return result;
+                },
+                (error) => {
+                    console.log(error);
+                }
+            )
+    }
+
+    getDefaultTab(list) {
+        return 0;
     }
 
 
-
-    getSimpleTabs(sub_nav){
+    getSimpleTabs(blocks) {
         return ({
-                    showMore: true,
-                    transform: true,
-                    showInkBar: true,
-                    items:sub_nav.map(({name,form_content,html_content,sub_nav},index) => ({
-                        key: index,
-                        title: name,
-                        content: this.getStageContent(form_content,html_content,sub_nav)
+            showMore: true,
+            transform: true,
+            showInkBar: true,
+            items:  blocks.map(({id, name,data,UI_Schema,jsonSchema}, index) => ({
+                key: index,
+                title: name,
+                content: this.getBlockContent(data,UI_Schema,jsonSchema)
+            })),
 
-                    })),
-                    selectedTabKey: 0
+            selectedTabKey: 0
         });
     }
-    getStageContent(form_content,html_content,sub_nav){
-        return(
-             <div>
-              {html_content? renderHTML(html_content) : ""}
-              {form_content? ( <div><Form schema={form_content.jsonSchema} formData={form_content.formData}/></div> ) : ""}
-              <br/>
-              {sub_nav ?
-              (<div className={"box"}>
-              <div className={"box-body basic__tabs nav-tabs-custom"}>
-              <Tabs {...this.getSimpleTabs(sub_nav)}/>
-              </div>
-              </div>) : ""}
-              </div>
+
+    getBlockContent(data,UI_Schema,jsonSchema) {
+        return (
+            <div>
+                {<div><Form className={"form-horizontal"} schema={jsonSchema} uiSchema={uiSchema}  formData={data}></Form></div>}
+            </div>
         );
     }
 
+    getStageContent(stage, blocks) {
+        return (
+            <div>
+                {stage.data ? (<div><Form schema={jsonSchema} uiSchema={uiSchema} formData={stage.data}></Form></div>) : ""}
+                <br/>
+                {blocks ?
+                    (<div className={"box"}>
+                        <div className={"box-body basic__tabs nav-tabs-custom"}>
+                            <Tabs {...this.getSimpleTabs(blocks)}/>
+                        </div>
+                    </div>) : ""}
+            </div>
+        );
+    }
 
 
     componentDidMount() {
@@ -61,15 +89,15 @@ export class TabComponent extends PureComponent {
             .then(res => res.json())
             .then(
                 (result) => {
-                    console.log(result)
                     this.setState({
                         isLoaded: true,
-                        items: result.map(({ name,form_content,html_content,sub_nav}, index) => ({
+                        items: result.stageAndBlock.map(({stage, blocks}, index) => ({
                             key: index,
-                            title: name,
-                            content: this.getStageContent(form_content,html_content,sub_nav)
+                            title: stage.name,
+                            content: this.getStageContent(stage, blocks),
+                            selectedTabKey:0
+                        })),
 
-                        }))
                     });
                 },
                 // Note: it'smes important to handle errors here
@@ -90,33 +118,31 @@ export class TabComponent extends PureComponent {
 
     onChangeProp = propsName =>
         evt => {
-            this.setState({ [propsName]: evt.target.type === 'checkbox' ? evt.target.checked : +evt.target.value });
+            this.setState({[propsName]: evt.target.type === 'checkbox' ? evt.target.checked : +evt.target.value});
         };
 
 
     render() {
-        const { showMore, transform, showInkBar, selectedTabKey } = this.state;
+        const {showMore, transform, showInkBar, selectedTabKey} = this.state;
         return (
             <div class="box box-danger col-md-9">
-               <form id="form" onSubmit={this.handleSubmit}>
-               <div class="box-body">
-                    <div className="basic__wrapper">
-                        <div className="basic__tabs nav-tabs-custom">
-                            <Tabs {...this.state} />
+                    <div class="box-body">
+                        <div className="basic__wrapper">
+                            <div className="basic__tabs nav-tabs-custom">
+                                <Tabs {...this.state} />
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="box-footer">
-                    <div class="margin">
-                        <div class="btn-group">
-                            <button type="submit" class="btn btn-sm btn-warning btn-flat pull-left" >Save</button>
-                        </div>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-sm btn-info btn-flat pull-left">Next</button>
+                    <div class="box-footer">
+                        <div class="margin">
+                            <div class="btn-group">
+                                <button type="submit" class="btn btn-sm btn-warning btn-flat pull-left">Save</button>
+                            </div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-info btn-flat pull-left">Next</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-               </form>
             </div>
         );
     }
