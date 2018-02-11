@@ -1,6 +1,5 @@
 import React, {PureComponent} from 'react';
 import Tabs from 'react-responsive-tabs';
-import renderHTML from 'react-render-html';
 import Form from "react-jsonschema-form";
 import uiSchema from './uiSchema/uiSchema'
 import jsonSchema from './jsonSchema/jsonSchema'
@@ -19,12 +18,17 @@ export class TabComponent extends PureComponent {
             transform: true,
             showInkBar: true,
             items: [],
-            selectedTabKey: 0
+            selectedTabKey: 0,
+            block:{},
+            stage:{}
         };
         this.getSimpleTabs = this.getSimpleTabs.bind(this);
         this.getStageContent = this.getStageContent.bind(this);
         this.getDefaultTab = this.getDefaultTab.bind(this);
         this.getBlockContent = this.getBlockContent.bind(this);
+        this.handleSubmit=this.handleSubmit.bind(this);
+        this.handleBlockChange=this.handleBlockChange.bind(this);
+        this.handleStageChange=this.handleBlockChange.bind(this);
 
     }
 
@@ -38,6 +42,21 @@ export class TabComponent extends PureComponent {
                     console.log(error);
                 }
             )
+    }
+
+    handleSubmit(){
+        //e.preventDefault();
+        console.log(this.state);
+    }
+
+    handleBlockChange(formData){
+        console.log("block change");
+        this.state.block=formData;
+    }
+
+    handleStageChange(formData){
+        console.log("handleStageChange change");
+        this.state.stage=formData;
     }
 
     getDefaultTab(list) {
@@ -60,10 +79,10 @@ export class TabComponent extends PureComponent {
         });
     }
 
-    getBlockContent(data,UI_Schema,jsonSchema) {
+    getBlockContent(data) {
         return (
             <div>
-                {<div><Form className={"form-horizontal"} schema={jsonSchema} uiSchema={uiSchema}  formData={data}></Form></div>}
+                {<div><Form schema={jsonSchema} uiSchema={uiSchema}  formData={data} onSubmit={this.handleSubmit} onChange={this.handleBlockChange}></Form></div>}
             </div>
         );
     }
@@ -71,7 +90,7 @@ export class TabComponent extends PureComponent {
     getStageContent(stage, blocks) {
         return (
             <div>
-                {stage.data ? (<div><Form schema={jsonSchema} uiSchema={uiSchema} formData={stage.data}></Form></div>) : ""}
+                {stage.data ? (<div><Form children={true} schema={jsonSchema} uiSchema={uiSchema} formData={stage.data} onChange={this.handleStageChange}></Form></div>) : ""}
                 <br/>
                 {blocks ?
                     (<div className={"box"}>
@@ -130,16 +149,6 @@ export class TabComponent extends PureComponent {
                         <div className="basic__wrapper">
                             <div className="basic__tabs nav-tabs-custom">
                                 <Tabs {...this.state} />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="box-footer">
-                        <div class="margin">
-                            <div class="btn-group">
-                                <button type="submit" class="btn btn-sm btn-warning btn-flat pull-left">Save</button>
-                            </div>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-sm btn-info btn-flat pull-left">Next</button>
                             </div>
                         </div>
                     </div>
