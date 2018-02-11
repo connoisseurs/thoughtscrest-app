@@ -23,7 +23,13 @@ const customStyles = {
 export class WorkflowJsContentComponent extends PureComponent {
     constructor(props) {
         super(props);
-        this.state = {workflow : {}, isLoaded : false, modalIsOpen: false, currentElement: {}};
+        this.state = {
+          workflow : {},
+          isLoaded : false,
+          modalIsOpen: false,
+          currentElement: {},
+          selectedElement: {properties: {}}
+        };
         this.cangraph = new joint.dia.Graph();
         this.palgraph = new joint.dia.Graph();
         this.canpaper = null;
@@ -31,10 +37,17 @@ export class WorkflowJsContentComponent extends PureComponent {
 		    this.cancells=[];
         this.palcells=[];
         this.addCell = this.addCell.bind(this);
+
         this.populateWorkflow = this.populateWorkflow.bind(this);
         this.updateCoordinates = this.updateCoordinates.bind(this);
-        this.populateCanvas = this.populateCanvas.bind(this);
         this.populatePalette = this.populatePalette.bind(this);
+
+        this.addStart = this.addStart.bind(this);
+        this.addStages = this.addStages.bind(this);
+        this.addBlocks = this.addBlocks.bind(this);
+        this.addLinks = this.addLinks.bind(this);
+        this.addEnd = this.addEnd.bind(this);
+
         this.openModal = this.openModal.bind(this);
         this.afterOpenModal = this.afterOpenModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -51,7 +64,6 @@ export class WorkflowJsContentComponent extends PureComponent {
                       workflow: result
                   });
                   this.populateWorkflow();
-                  //this.populateCanvas();
                   this.populatePalette();
               },
               (error) => {
@@ -132,31 +144,27 @@ export class WorkflowJsContentComponent extends PureComponent {
           $('#flyPaper').remove();
         }.bind(this));
       }.bind(this));
-
-      // var svgZoom = svgPanZoom('#canvas svg', {
-      //   center: false,
-      //   zoomEnabled: true,
-      //   panEnabled: true,
-      //   controlIconsEnabled: true,
-      //   fit: false,
-      //   minZoom: 0.5,
-      //   maxZoom:2,
-      //   zoomScaleSensitivity: 0.5
-      // });
-      //
-      // (function(){
-      //   paper.on('cell:pointerdown', function(){
-      //     svgZoom.disablePan();
-      //   });
-      //   paper.on('cell:pointerup', function(){
-      //     svgZoom.enablePan();
-      //   });
-      // })();
     }
 
     openModal(el) {
       this.setState({modalIsOpen: true, currentElement: el});
+      this.findBlock(el);
+      this.setState({selectedElement: this.state.workflow.stages[0].blocks[1]});
+    }
 
+    findBlock(el){
+      var name = String(el.textContent);
+      for(var idx in this.state.workflow.stages){
+        var stage = this.state.workflow.stages[idx];
+        for(var idy in stage.blocks){
+          var block = stage.blocks[idy];
+          if(name == block.name){
+            this.setState({selectedElement: block});
+            alert(this.state);
+            break;
+          }
+        }
+      }
     }
 
     afterOpenModal() {
@@ -174,6 +182,7 @@ export class WorkflowJsContentComponent extends PureComponent {
       var maxrowcount = Math.floor(pwidth / (ewidth + offset)), rowcount = 0;
       var elements = [];
       var props = {};
+
       props.pwidth = pwidth;
       props.rowcount = rowcount;
       props.x = x;
@@ -183,33 +192,49 @@ export class WorkflowJsContentComponent extends PureComponent {
       props.maxrowcount = maxrowcount;
       props.reverse = false;
       props.dir = "ltr";
+
+      this.addStart(props, elements);
+      this.addStages(props, elements);
+      this.addEnd(props, elements);
+      this.addLinks(elements);
+    }
+
+    addStart(props, elements){
+      var start = getStart(props.x, props.y);
+      elements.push(start);
+      this.cangraph.addCell(start);
+      props = this.updateCoordinates(props);
+    }
+
+    addStages(props, elements){
       for(var idx in this.state.workflow.stages){
         var sitem = this.state.workflow.stages[idx];
         var stage = getStage(props.x, props.y, sitem.name);
         elements.push(stage);
         this.cangraph.addCell(stage);
         props = this.updateCoordinates(props);
-        // rowcount++;
-        // x = x + (ewidth + offset);
-        // if(rowcount == maxrowcount){
-        //   rowcount = 0;
-        //   x = 5;
-        //   y = y + 100;
-        // }
-        for(var idy in sitem.blocks){
-          var bitem = sitem.blocks[idy];
-          var block = getBlockWithPorts(props.x, props.y, bitem.name);
-          elements.push(block);
-          this.cangraph.addCell(block);
-          props = this.updateCoordinates(props);
-          // rowcount++;
-          // x = x + (ewidth + offset);
-          // if(rowcount == maxrowcount){
-          //   rowcount = 0;
-          //   y = y + 100;
-          // }
-        }
+        this.addBlocks(sitem, elements, props);
       }
+    }
+
+    addBlocks(stage, elements, props){
+      for(var idy in stage.blocks){
+        var bitem = stage.blocks[idy];
+        var block = getBlockWithPorts(props.x, props.y, bitem.name);
+        elements.push(block);
+        this.cangraph.addCell(block);
+        props = this.updateCoordinates(props);
+      }
+    }
+
+    addEnd(props, elements){
+      var end = getEnd(props.x, props.y);
+      elements.push(end);
+      this.cangraph.addCell(end);
+      props = this.updateCoordinates(props);
+    }
+
+    addLinks(elements){
       for(var idz = 0; idz < elements.length - 1;idz++){
         var link = new joint.dia.Link({
           source: {
@@ -235,7 +260,6 @@ export class WorkflowJsContentComponent extends PureComponent {
       }else{
           x = x - (ewidth + offset);
       }
-
       if(rowcount == maxrowcount){
         rowcount = 0;
         if(dir === "ltr"){
@@ -247,7 +271,6 @@ export class WorkflowJsContentComponent extends PureComponent {
         }
         y = y + 100;
       }
-
       props.rowcount = rowcount;
       props.x = x;
       props.y = y;
@@ -257,34 +280,6 @@ export class WorkflowJsContentComponent extends PureComponent {
       props.reverse = reverse;
       props.dir = dir;
       return props;
-    }
-
-    populateCanvas(){
-      this.cancells[0] = getBlockWithPorts(20,20,'block 1 newccc');
-      this.cancells[0].translate(140, 100);
-      this.cancells[1] = this.cancells[0].clone();
-      this.cancells[1].translate(300, 60);
-      this.cancells[1].attr('.rectlabel/text', 'blok 2 ssfsf');
-      this.cangraph.addCells(this.cancells);
-
-      var link = new joint.dia.Link({
-        source: {
-          id: this.cancells[0].id,
-          port: 'center'
-        },
-        target: {
-          id: this.cancells[1].id,
-          port: 'center'
-        }
-      });
-      this.cangraph.addCells([link]);
-      // $('#addCell').on('click', addCell);
-      this.canpaper.on('cell:pointerclick', function(e){
-        alert(e.el.textContent+' clicked');
-      });
-
-      const polygon = getStage(140, 10, 'my polygon new');
-      this.cangraph.addCell(polygon);
     }
 
     populatePalette() {
@@ -307,15 +302,6 @@ export class WorkflowJsContentComponent extends PureComponent {
           }
         }
       }
-
-      // var tx = 5, ty = 5, tz = 150; var block = null, idx = 0, item = null;
-      // for(var idx in this.state.workflow.stages[0].blocks){
-      //   item = this.state.workflow.stages[0].blocks[idx];
-      //   block = getBlock(1,1, item.name)
-      //   block.translate(tx, ty);
-      //   this.palgraph.addCell(block);
-      //   tx = tx + tz;
-      // }
     }
 
     addCell() {
@@ -345,6 +331,31 @@ export class WorkflowJsContentComponent extends PureComponent {
             contentLabel="Example Modal">
             <h2 ref={subtitle => this.subtitle = subtitle}>{this.state.currentElement.textContent}</h2>
             <div>Properties of {this.state.currentElement.textContent}</div>
+            <textarea value={this.state.selectedElement.description}></textarea>
+            <table>
+              <th>
+                <td>Property</td>
+                <td>Value</td>
+              </th>
+              {
+                // <tr>
+                //   <td>{this.state.selectedElement.id}</td>
+                //   <td>{this.state.selectedElement.description}</td>
+                // </tr>
+                Object.keys(this.state.selectedElement.properties).map(function(key, idx) {
+                  return (<tr>
+                    <td>{key}</td>
+                    <td>{this.state.selectedElement.properties[key]}</td>
+                  </tr>)
+                }.bind(this))
+                // this.state.selectedElement.props.map(key => {
+                //   <tr>
+                //     <td>key</td>
+                //     <td>this.state.selectedElement.props[key]</td>
+                //   </tr>
+                // })
+              }
+            </table>
             <button onClick={this.closeModal} class="btn btn-sm btn-info btn-flat pull-right">close</button>
           </Modal>
         </div>
@@ -366,7 +377,7 @@ function getBlock(posx, posy, name){
 
 function getStart(posx, posy){
   return new joint.shapes.basic.Ellipse({
-      position: { x: 100, y: 130 },
+      position: { x: posx, y: posy },
       size: { width: 100, height: 30 },
       attrs: {
           ellipse: { fill: 'green' },
@@ -375,9 +386,9 @@ function getStart(posx, posy){
   });
 }
 
-function getEnd(){
+function getEnd(posx, posy){
   return new joint.shapes.basic.Ellipse({
-      position: { x: 850, y: 130 },
+      position: { x: posx, y: posy },
       size: { width: 100, height: 30 },
       attrs: {
           ellipse: { fill: 'red' },
