@@ -49,7 +49,7 @@ export class TabComponent extends PureComponent {
     handleSubmit(){
         //e.preventDefault();
         var responseJSONObj = this.state.responseData;
-        fetch("http://192.168.0.102:8092/lead/api/facility", {
+        fetch("http://localhost:8090/lead/api/facility", {
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -61,12 +61,16 @@ export class TabComponent extends PureComponent {
 
     handleBlockChange(formData){
         console.log("block change");
-        this.state.responseData.stageAndBlock[this.state.stage_id].blocks[this.state.block_id].data=formData;
+        console.log(formData);
+
+        this.state.responseData.stageAndBlock[this.state.stage_id].blocks[this.state.block_id].data.fData=formData["formData"];
     }
 
     handleStageChange(formData){
         console.log("handleStageChange change");
-        this.state.responseData.stageAndBlock[this.state.stage_id].stage.data=formData;
+        console.log(formData);
+
+        this.state.responseData.stageAndBlock[this.state.stage_id].stage.data.fData=formData["formData"];
     }
 
     getDefaultTab(list) {
@@ -82,18 +86,18 @@ export class TabComponent extends PureComponent {
             items:  blocks.map(({id, name,data,uiSchema,jsonSchema}, index) => ({
                 key: index,
                 title: name,
-                content: this.getBlockContent(data,index,uiSchema,jsonSchema)
+                content: this.getBlockContent(data,index,id)
             })),
 
             selectedTabKey: 0
         });
     }
 
-    getBlockContent(data,index,uiSch,jsonSch) {
+    getBlockContent(data,index,id) {
         this.state.block_id=index;
         return (
             <div>
-                {<div><Form schema={jsonSchema[jsonSch]} uiSchema={uiSchema[uiSch]}  formData={data} onSubmit={this.handleSubmit} onChange={this.handleBlockChange}></Form></div>}
+                {<div><Form schema={jsonSchema[id]} uiSchema={uiSchema[id]}  formData={data} onSubmit={this.handleSubmit} onChange={this.handleBlockChange}></Form></div>}
             </div>
         );
     }
@@ -102,7 +106,7 @@ export class TabComponent extends PureComponent {
         this.state.stage_id=index;
         return (
             <div>
-                {stage.data ? (<div><Form children={true} schema={jsonSchema[stage.jsonSchema]} uiSchema={uiSchema[stage.uiSchema]} formData={stage.data} onChange={this.handleStageChange}></Form></div>) : ""}
+                {stage.data ? (<div><Form children={true} schema={jsonSchema[stage.id]} uiSchema={uiSchema[stage.id]} formData={stage.data} onChange={this.handleStageChange}></Form></div>) : ""}
                 <br/>
                 {blocks ?
                     (<div className={"box"}>
@@ -116,7 +120,17 @@ export class TabComponent extends PureComponent {
 
 
     componentDidMount() {
-        fetch("./dist/dummyData.json")
+        var initialJson = {
+            "workFlowID": "LeadWF_ID",
+            "applicationID": ""
+        };
+        fetch("http://localhost:8090/lead/api/facility", {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            method: "POST",
+            body: JSON.stringify(initialJson)
+        })
             .then(res => res.json())
             .then((res1) => this.state.responseData=res1)
             .then(

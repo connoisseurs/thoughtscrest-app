@@ -1,67 +1,102 @@
-export const stageSchema = {
+export const bk02 ={
   "type": "object",
   "properties": {
-    "facility_id": {
+    "customerMargin": {
       "type": "string"
     },
-    "facility_type": {
+    "eligiblityAmount": {
       "type": "string"
     },
-    "facility_desc": {
+    "facilityDesc": {
       "type": "string"
     },
-    "facility_purpose": {
+    "facilityId": {
       "type": "string"
     },
-    "total_cost": {
+    "facilityPurpose": {
       "type": "string"
     },
-    "customer_margin": {
+    "facilityType": {
       "type": "string"
     },
-    "requested_amount": {
+    "interestRate": {
       "type": "string"
     },
-    "loan_currency": {
+    "leadId": {
       "type": "string"
     },
-    "eligiblity_amount": {
+    "loanCurrency": {
       "type": "string"
     },
-    "loan_term": {
+    "loanTerm": {
       "type": "string"
     },
-    "loan_type": {
+    "loanType": {
       "type": "string"
     },
-    "interest_rate": {
+    "repaymentType": {
       "type": "string"
     },
-    "repayment_type": {
+    "requestedAmount": {
       "type": "string"
     },
-    "schedule_id": {
+    "scheduleId": {
       "type": "string"
     },
-    "lead_id": {
+    "totalCost": {
       "type": "string"
     }
   },
   "required": [
-    "facility_id",
-    "facility_type",
-    "facility_desc",
-    "facility_purpose",
-    "total_cost",
-    "customer_margin",
-    "requested_amount",
-    "loan_currency",
-    "eligiblity_amount",
-    "loan_term",
-    "loan_type",
-    "interest_rate",
-    "repayment_type",
-    "schedule_id",
-    "lead_id"
+
   ]
-}
+};
+
+export const bk01 ={
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "BaseDetail": {
+      "type": "string"
+    },
+    "leadId": {
+      "type": "string"
+    },
+    "customerId": {
+      "type": "string"
+    },
+    "remarks": {
+      "type": "string"
+    },
+    "dateOfCcreation": {
+      "type": "string"
+    },
+    "createdBy": {
+      "type": "string"
+    },
+    "assignedTo": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "applicationId": {
+      "type": "string"
+    },
+    "originationChannel": {
+      "type": "string"
+    },
+    "salesPromotionType": {
+      "type": "string"
+    },
+    "branch": {
+      "type": "string"
+    },
+    "versionnum": {
+      "type": "integer"
+    }
+  },
+  "required": [
+   
+  ]
+};

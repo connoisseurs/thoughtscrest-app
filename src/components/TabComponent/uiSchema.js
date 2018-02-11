@@ -1,4 +1,4 @@
-export const bk02 = {
+export const uiSchema = {
   "customerMargin" : { "ui:emptyValue": "" },
 "eligiblityAmount" : { "ui:emptyValue": "" },
 "facilityDesc" : { "ui:emptyValue": "" },
@@ -19,18 +19,6 @@ export const bk02 = {
 "totalCost" : { "ui:emptyValue": "" }
 }
 
-export const bk01 = {
-  "BaseDetail":{"ui:widget": "hidden"},
-  "leadId": { "ui:emptyValue": "" },
-  "customerId": { "ui:emptyValue": "" },
-  "remarks": { "ui:emptyValue": "" },
-  "dateOfCcreation": { "ui:emptyValue": "" },
-  "createdBy": { "ui:emptyValue": "" },
-  "assignedTo": { "ui:emptyValue": "" },
-  "status": { "ui:emptyValue": "" },
-  "applicationId": { "ui:emptyValue": "" },
-  "originationChannel": { "ui:emptyValue": "" },
-  "salesPromotionType": { "ui:emptyValue": "" },
-  "branch": { "ui:emptyValue": "" },
- "versionnum":{"ui:widget": "hidden"}
-  };
+
+
+export default uiSchema;
