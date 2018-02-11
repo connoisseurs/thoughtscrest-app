@@ -19,8 +19,10 @@ export class TabComponent extends PureComponent {
             showInkBar: true,
             items: [],
             selectedTabKey: 0,
-            block:{},
-            stage:{}
+            responseData:{},
+            stage_id:0,
+            block_id:0
+
         };
         this.getSimpleTabs = this.getSimpleTabs.bind(this);
         this.getStageContent = this.getStageContent.bind(this);
@@ -28,7 +30,7 @@ export class TabComponent extends PureComponent {
         this.getBlockContent = this.getBlockContent.bind(this);
         this.handleSubmit=this.handleSubmit.bind(this);
         this.handleBlockChange=this.handleBlockChange.bind(this);
-        this.handleStageChange=this.handleBlockChange.bind(this);
+        this.handleStageChange=this.handleStageChange.bind(this);
 
     }
 
@@ -46,17 +48,25 @@ export class TabComponent extends PureComponent {
 
     handleSubmit(){
         //e.preventDefault();
+        var responseJSONObj = this.state.responseData;
+        fetch("http://192.168.0.102:8092/lead/api/facility", {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            method: "POST",
+            body: JSON.stringify(responseJSONObj)
+        })
         console.log(this.state);
     }
 
     handleBlockChange(formData){
         console.log("block change");
-        this.state.block=formData;
+        this.state.responseData.stageAndBlock[this.state.stage_id].blocks[this.state.block_id].data=formData;
     }
 
     handleStageChange(formData){
         console.log("handleStageChange change");
-        this.state.stage=formData;
+        this.state.responseData.stageAndBlock[this.state.stage_id].stage.data=formData;
     }
 
     getDefaultTab(list) {
@@ -72,14 +82,15 @@ export class TabComponent extends PureComponent {
             items:  blocks.map(({id, name,data,UI_Schema,jsonSchema}, index) => ({
                 key: index,
                 title: name,
-                content: this.getBlockContent(data,UI_Schema,jsonSchema)
+                content: this.getBlockContent(data,index)
             })),
 
             selectedTabKey: 0
         });
     }
 
-    getBlockContent(data) {
+    getBlockContent(data,index) {
+        this.state.block_id=index;
         return (
             <div>
                 {<div><Form schema={jsonSchema} uiSchema={uiSchema}  formData={data} onSubmit={this.handleSubmit} onChange={this.handleBlockChange}></Form></div>}
@@ -87,7 +98,8 @@ export class TabComponent extends PureComponent {
         );
     }
 
-    getStageContent(stage, blocks) {
+    getStageContent(stage,blocks,index) {
+        this.state.stage_id=index;
         return (
             <div>
                 {stage.data ? (<div><Form children={true} schema={jsonSchema} uiSchema={uiSchema} formData={stage.data} onChange={this.handleStageChange}></Form></div>) : ""}
@@ -106,6 +118,7 @@ export class TabComponent extends PureComponent {
     componentDidMount() {
         fetch("./dist/dummyData.json")
             .then(res => res.json())
+            .then((res1) => this.state.responseData=res1)
             .then(
                 (result) => {
                     this.setState({
@@ -113,7 +126,7 @@ export class TabComponent extends PureComponent {
                         items: result.stageAndBlock.map(({stage, blocks}, index) => ({
                             key: index,
                             title: stage.name,
-                            content: this.getStageContent(stage, blocks),
+                            content: this.getStageContent(stage, blocks,index),
                             selectedTabKey:0
                         })),
 
