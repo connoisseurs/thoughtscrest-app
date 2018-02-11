@@ -1,8 +1,8 @@
 import React, {PureComponent} from 'react';
 import Tabs from 'react-responsive-tabs';
 import Form from "react-jsonschema-form";
-import uiSchema from './uiSchema/uiSchema'
-import jsonSchema from './jsonSchema/jsonSchema'
+import * as uiSchema from './uiSchema/uiSchema';
+import * as jsonSchema from './jsonSchema/jsonSchema';
 
 
 import './styles.css';
@@ -79,21 +79,21 @@ export class TabComponent extends PureComponent {
             showMore: true,
             transform: true,
             showInkBar: true,
-            items:  blocks.map(({id, name,data,UI_Schema,jsonSchema}, index) => ({
+            items:  blocks.map(({id, name,data,uiSchema,jsonSchema}, index) => ({
                 key: index,
                 title: name,
-                content: this.getBlockContent(data,index)
+                content: this.getBlockContent(data,index,uiSchema,jsonSchema)
             })),
 
             selectedTabKey: 0
         });
     }
 
-    getBlockContent(data,index) {
+    getBlockContent(data,index,uiSch,jsonSch) {
         this.state.block_id=index;
         return (
             <div>
-                {<div><Form schema={jsonSchema} uiSchema={uiSchema}  formData={data} onSubmit={this.handleSubmit} onChange={this.handleBlockChange}></Form></div>}
+                {<div><Form schema={jsonSchema[jsonSch]} uiSchema={uiSchema[uiSch]}  formData={data} onSubmit={this.handleSubmit} onChange={this.handleBlockChange}></Form></div>}
             </div>
         );
     }
@@ -102,7 +102,7 @@ export class TabComponent extends PureComponent {
         this.state.stage_id=index;
         return (
             <div>
-                {stage.data ? (<div><Form children={true} schema={jsonSchema} uiSchema={uiSchema} formData={stage.data} onChange={this.handleStageChange}></Form></div>) : ""}
+                {stage.data ? (<div><Form children={true} schema={jsonSchema[stage.jsonSchema]} uiSchema={uiSchema[stage.uiSchema]} formData={stage.data} onChange={this.handleStageChange}></Form></div>) : ""}
                 <br/>
                 {blocks ?
                     (<div className={"box"}>

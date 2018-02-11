@@ -1,4 +1,4 @@
-export const uiSchema = {
+export const stageSchema = {
   "facility_type" : { "ui:emptyValue": "" },
 "facility_desc" : { "ui:emptyValue": "" },
 "facility_purpose" : { "ui:emptyValue": "" },
@@ -17,4 +17,3 @@ export const uiSchema = {
 "schedule_id" : { "ui:emptyValue": "" },
 "lead_id" : { "ui:emptyValue": "" }
 }
-export default uiSchema;

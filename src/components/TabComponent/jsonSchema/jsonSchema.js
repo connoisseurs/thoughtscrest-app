@@ -1,4 +1,4 @@
-export const jsonSchema = {
+export const stageSchema = {
   "type": "object",
   "properties": {
     "facility_id": {
@@ -65,5 +65,3 @@ export const jsonSchema = {
     "lead_id"
   ]
 }
-
-export default jsonSchema;

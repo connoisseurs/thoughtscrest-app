@@ -4,8 +4,8 @@
       "stage": {
         "id": 0,
         "name": "xyz",
-        "UI_Schema": "./dist/Facility Detail/facilityDetail_uiSchema.json",
-        "JSON_Schema": "./dist/Facility Detail/facilityDetail_jsonSchema.json",
+        "uiSchema": "stageSchema",
+        "jsonSchema": "stageSchema",
         "data": {
           "facility_id": "facID_1",
           "facility_type": "Home Loan",
@@ -28,8 +28,8 @@
     {
       "id": 0,
       "name": "xyz",
-      "UI_Schema": "./dist/Facility Detail/facilityDetail_uiSchema.json",
-      "JSON_Schema": "./dist/Facility Detail/facilityDetail_jsonSchema.json",
+      "uiSchema": "stageSchema",
+      "jsonSchema": "stageSchema",
       "data": {
         "facility_id": "facID_1",
         "facility_type": "Home Loan",
