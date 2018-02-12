@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
-import Modal from 'react-modal';
 import joint from 'jointjs';
+import {Modal, Button, OverlayTrigger, Popover, Tooltip, Table } from 'react-bootstrap';
 import Block from "./Components/Block";
 import BlockWithPorts from "./Components/BlockWithPorts";
 import Stage from "./Components/Stage";
@@ -49,7 +49,6 @@ export class WorkflowJsContentComponent extends PureComponent {
         this.addEnd = this.addEnd.bind(this);
 
         this.openModal = this.openModal.bind(this);
-        this.afterOpenModal = this.afterOpenModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
     }
 
@@ -94,9 +93,8 @@ export class WorkflowJsContentComponent extends PureComponent {
         gridSize: 20,
         clickThreshold: 1
       });
-      this.canpaper.on('cell:pointerclick', function(e){
-        alert(e.el.textContent +' clicked');
-        this.openModal(e.el);
+      this.canpaper.on('cell:pointerclick', function(cell){
+        this.openModal(cell);
       }.bind(this));
 
       this.palpaper.on('cell:pointerdown', function(cellView, e, x, y) {
@@ -146,36 +144,34 @@ export class WorkflowJsContentComponent extends PureComponent {
       }.bind(this));
     }
 
-    openModal(el) {
-      this.setState({modalIsOpen: true, currentElement: el});
-      this.findBlock(el);
-      this.setState({selectedElement: this.state.workflow.stages[0].blocks[1]});
+    openModal(cell) {
+      if(cell.model.isElement() && cell.model.attributes['wetype'] === 'block'){
+        this.setState({modalIsOpen: true, currentElement: cell.el});
+        // alert(cell.model.isElement());
+        // alert(cell.model.attributes['wetype']);
+        this.findBlock(cell.model);
+        //this.setState({selectedElement: this.state.workflow.stages[0].blocks[1]});
+      }
+      console.log(JSON.stringify(this.cangraph.toJSON()));
     }
 
-    findBlock(el){
-      var name = String(el.textContent);
+    findBlock(model){
+      var name = model.attributes['wename'];
       for(var idx in this.state.workflow.stages){
         var stage = this.state.workflow.stages[idx];
         for(var idy in stage.blocks){
           var block = stage.blocks[idy];
           if(name == block.name){
             this.setState({selectedElement: block});
-            alert(this.state);
             break;
           }
         }
       }
     }
 
-    afterOpenModal() {
-      // references are now sync'd and can be accessed.
-    //  this.subtitle.style.color = '#f00';
-    }
-
     closeModal() {
       this.setState({modalIsOpen: false});
     }
-
 
     populateWorkflow(){
       var x = 5, y = 5, ewidth = 140, offset = 50, pwidth = this.canvas.offsetWidth, pheight = this.canvas.offsetHeight;
@@ -302,6 +298,10 @@ export class WorkflowJsContentComponent extends PureComponent {
           }
         }
       }
+      var bitem = sitem.blocks[idy];
+      var block = getBlockWithPorts(x, y, "extra block from palette");
+      elements.push(block);
+      this.palgraph.addCell(block);
     }
 
     addCell() {
@@ -315,6 +315,12 @@ export class WorkflowJsContentComponent extends PureComponent {
     };
 
     render() {
+      const popover = (
+        <Popover id="modal-popover" title="popover">
+          very popover. such engagement
+        </Popover>
+      );
+      const tooltip = <Tooltip id="modal-tooltip">wow.</Tooltip>;
       return(
         <div style={{width : "100%"}}>
           <div id="canvas" ref="canvasholder"></div>
@@ -323,56 +329,66 @@ export class WorkflowJsContentComponent extends PureComponent {
           <button id="amend" type="button" class="btn btn-sm btn-info btn-flat pull-right">Amend</button>
           <button id="info" type="button" class="btn btn-sm btn-info btn-flat pull-right">Info</button>
           <div id="palette" ref="paletteholder"></div>
-          <Modal
-            isOpen={this.state.modalIsOpen}
-            onAfterOpen={this.afterOpenModal}
-            onRequestClose={this.closeModal}
-            style={customStyles}
-            contentLabel="Example Modal">
-            <h2 ref={subtitle => this.subtitle = subtitle}>{this.state.currentElement.textContent}</h2>
-            <div>Properties of {this.state.currentElement.textContent}</div>
-            <textarea value={this.state.selectedElement.description}></textarea>
-            <table>
-              <th>
-                <td>Property</td>
-                <td>Value</td>
-              </th>
-              {
-                // <tr>
-                //   <td>{this.state.selectedElement.id}</td>
-                //   <td>{this.state.selectedElement.description}</td>
-                // </tr>
-                Object.keys(this.state.selectedElement.properties).map(function(key, idx) {
-                  return (<tr>
-                    <td>{key}</td>
-                    <td>{this.state.selectedElement.properties[key]}</td>
-                  </tr>)
-                }.bind(this))
-                // this.state.selectedElement.props.map(key => {
-                //   <tr>
-                //     <td>key</td>
-                //     <td>this.state.selectedElement.props[key]</td>
-                //   </tr>
-                // })
-              }
-            </table>
-            <button onClick={this.closeModal} class="btn btn-sm btn-info btn-flat pull-right">close</button>
-          </Modal>
+            <Modal show={this.state.modalIsOpen} onHide={this.closeModal}>
+              <Modal.Header closeButton>
+                <Modal.Title>{this.state.currentElement.textContent}</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                {/* <div className="container-fluid col-md-12"> */}
+                  <div className="row">
+                    <div className="col-md-6">
+                        <textarea value={this.state.selectedElement.description}></textarea>
+                    </div>
+                    <div className="col-md-6">
+                      <Table responsive striped bordered condensed hover>
+                        <thead>
+                          <tr>
+                            <td>Property</td>
+                            <td>Value</td>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {
+                            Object.keys(this.state.selectedElement.properties).map(function(key, idx) {
+                              return (<tr>
+                                <td>{key}</td>
+                                <td>{this.state.selectedElement.properties[key]}</td>
+                              </tr>)
+                            }.bind(this))
+                          }
+                        </tbody>
+                      </Table>
+                    </div>
+                  </div>
+                {/* </div> */}
+              </Modal.Body>
+              <Modal.Footer>
+                <Button onClick={this.closeModal}>Close</Button>
+              </Modal.Footer>
+            </Modal>
         </div>
       );
     }
 }
 
 function getStage(posx, posy, name){
-  return Stage({x: posx, y: posy, name: name});
+  var istage = Stage({x: posx, y: posy, name: name});
+  istage.prop('wetype', 'stage');
+  istage.prop('weid', '');
+  istage.prop('wename', name);
+  return istage;
 }
 
 function getBlockWithPorts(posx, posy, name){
-  return BlockWithPorts({x: posx, y: posy, name: name});
+  var iblock = BlockWithPorts({x: posx, y: posy, name: name, id: ''});
+  iblock.prop('wetype', 'block');
+  iblock.prop('weid', '');
+  iblock.prop('wename', name);
+  return iblock;
 }
 
 function getBlock(posx, posy, name){
-  return Block({x: posx, y: posy, name: name});
+  return Block({x: posx, y: posy, name: name, id: ''});
 }
 
 function getStart(posx, posy){
@@ -396,6 +412,22 @@ function getEnd(posx, posy){
       }
   });
 }
+
+var decode_entities = (function() {
+  var translate_re = /&(nbsp|amp|quot|lt|gt);/g;
+  var translate = {
+    "nbsp": " ",
+    "amp" : "&",
+    "quot": "\"",
+    "lt"  : "<",
+    "gt"  : ">"
+  };
+  return function(s) {
+    return ( s.replace(translate_re, function(match, entity) {
+      return translate[entity];
+    }) );
+  }
+})();
 
 joint.shapes.devs.Model = joint.shapes.devs.Model.extend({
 markup: '<g class="element-node">'+
