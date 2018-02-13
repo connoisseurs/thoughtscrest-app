@@ -15,8 +15,7 @@ export function BlockWithPorts (props) {
         text: props.name,
       },
       '.element-node' : {
-        'data-color': 'pink',
-        'data-blockname': props.name
+        'data-color': 'pink'
       }
     },
     inPorts: ['center']

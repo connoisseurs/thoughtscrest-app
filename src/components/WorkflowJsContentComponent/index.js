@@ -9,26 +9,18 @@ import './joint.core.css';
 import './style.css';
 import $ from 'jquery';
 
-const customStyles = {
-  content : {
-    top                   : '50%',
-    left                  : '50%',
-    right                 : 'auto',
-    bottom                : 'auto',
-    marginRight           : '-50%',
-    transform             : 'translate(-50%, -50%)'
-  }
-};
-
 export class WorkflowJsContentComponent extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
           workflow : {},
           isLoaded : false,
-          modalIsOpen: false,
-          currentElement: {},
-          selectedElement: {properties: {}}
+          canModalIsOpen: false,
+          palModalIsOpen: false,
+          currentCanElement: {el : {}},
+          selectedCanElement: {properties: {}},
+          currentPalElement: {el : {}},
+          selectedPalElement: {properties: {}},
         };
         this.cangraph = new joint.dia.Graph();
         this.palgraph = new joint.dia.Graph();
@@ -41,6 +33,9 @@ export class WorkflowJsContentComponent extends PureComponent {
         this.populateWorkflow = this.populateWorkflow.bind(this);
         this.updateCoordinates = this.updateCoordinates.bind(this);
         this.populatePalette = this.populatePalette.bind(this);
+        this.checkIfElementExistsInGraph = this.checkIfElementExistsInGraph.bind(this);
+        this.removeFromGraph = this.removeFromGraph.bind(this);
+        this.saveGraph = this.saveGraph.bind(this);
 
         this.addStart = this.addStart.bind(this);
         this.addStages = this.addStages.bind(this);
@@ -48,8 +43,10 @@ export class WorkflowJsContentComponent extends PureComponent {
         this.addLinks = this.addLinks.bind(this);
         this.addEnd = this.addEnd.bind(this);
 
-        this.openModal = this.openModal.bind(this);
-        this.closeModal = this.closeModal.bind(this);
+        this.openCanModal = this.openCanModal.bind(this);
+        this.closeCanModal = this.closeCanModal.bind(this);
+        this.openPalModal = this.openPalModal.bind(this);
+        this.closePalModal = this.closePalModal.bind(this);
     }
 
     componentDidMount(){
@@ -94,83 +91,121 @@ export class WorkflowJsContentComponent extends PureComponent {
         clickThreshold: 1
       });
       this.canpaper.on('cell:pointerclick', function(cell){
-        this.openModal(cell);
+        this.openCanModal(cell);
+      }.bind(this));
+      this.palpaper.on('cell:pointerclick', function(cell){
+        this.openPalModal(cell);
       }.bind(this));
 
       this.palpaper.on('cell:pointerdown', function(cellView, e, x, y) {
-        $('body').append('<div id="flyPaper" ref="flypaper" style="position:fixed;z-index:100;opacity:.7;pointer-event:none;"></div>');
-        var flyGraph = new joint.dia.Graph,
-          flyPaper = new joint.dia.Paper({
-            el: $('#flyPaper'),
-            model: flyGraph,
-            interactive: false
-          }),
-          flyShape = cellView.model.clone(),
-          pos = cellView.model.position(),
-          offset = {
-            x: x - pos.x,
-            y: y - pos.y
-          };
+        if(!this.checkIfElementExistsInGraph(cellView)){
+          $('body').append('<div id="flyPaper" ref="flypaper" style="position:fixed;z-index:100;opacity:.7;pointer-event:none;"></div>');
+          var flyGraph = new joint.dia.Graph,
+            flyPaper = new joint.dia.Paper({
+              el: $('#flyPaper'),
+              model: flyGraph,
+              interactive: false
+            }),
+            flyShape = cellView.model.clone(),
+            pos = cellView.model.position(),
+            offset = {
+              x: x - pos.x,
+              y: y - pos.y
+            };
 
-        flyShape.position(0, 0);
-        flyGraph.addCell(flyShape);
-        $("#flyPaper").offset({
-          left: e.pageX - offset.x,
-          top: e.pageY - offset.y
-        });
-        $('body').on('mousemove.fly', function(e) {
+          flyShape.position(0, 0);
+          flyGraph.addCell(flyShape);
           $("#flyPaper").offset({
             left: e.pageX - offset.x,
             top: e.pageY - offset.y
           });
-        }.bind(this));
-        $('body').on('mouseup.fly', function(e) {
-          console.log("element : " + e)
-          console.log("el from paper : " + this.canpaper)
-          var x = e.pageX,
-            y = e.pageY,
-            target = this.canpaper.$el.offset();
+          $('body').on('mousemove.fly', function(e) {
+            $("#flyPaper").offset({
+              left: e.pageX - offset.x,
+              top: e.pageY - offset.y
+            });
+          }.bind(this));
+          $('body').on('mouseup.fly', function(e) {
+            console.log("element : " + e)
+            console.log("el from paper : " + this.canpaper)
+            var x = e.pageX,
+              y = e.pageY,
+              target = this.canpaper.$el.offset();
 
-          // Dropped over paper ?
-          if (x > target.left && x < target.left + this.canpaper.$el.width() && y > target.top && y < target.top + this.canpaper.$el.height()) {
-            var s = flyShape.clone();
-            s.position(x - target.left - offset.x, y - target.top - offset.y);
-            this.cangraph.addCell(s);
-          }
-          $('body').off('mousemove.fly').off('mouseup.fly');
-          flyShape.remove();
-          $('#flyPaper').remove();
-        }.bind(this));
+            // Dropped over paper ?
+            if (x > target.left && x < target.left + this.canpaper.$el.width() && y > target.top && y < target.top + this.canpaper.$el.height()) {
+              var s = flyShape.clone();
+              s.position(x - target.left - offset.x, y - target.top - offset.y);
+              this.cangraph.addCell(s);
+            }
+            $('body').off('mousemove.fly').off('mouseup.fly');
+            flyShape.remove();
+            $('#flyPaper').remove();
+          }.bind(this));
+        }
       }.bind(this));
+
     }
 
-    openModal(cell) {
+    checkIfElementExistsInGraph(cell){
+      var element = cell.model;
+      var type = element.attributes['wetype'];
+      var id = element.attributes['weid'];
+      var name = element.attributes['wename'];
+      var gjson = this.cangraph.toJSON();
+      for(var idx in gjson.cells){
+        var gelement = gjson.cells[idx];
+        if((gelement['wetype'] && gelement['wetype'] == type)
+          //&& (gelement['weid'] && gelement['weid'] == id)
+          && (gelement['wename'] && gelement['wename'] == name)){
+          return true;
+        }
+      }
+      return false;
+    }
+
+    openCanModal(cell) {
       if(cell.model.isElement() && cell.model.attributes['wetype'] === 'block'){
-        this.setState({modalIsOpen: true, currentElement: cell.el});
+        this.setState({canModalIsOpen: true, currentCanElement: cell});
+        this.setState({selectedCanElement: cell.model.attributes['witem']});
         // alert(cell.model.isElement());
         // alert(cell.model.attributes['wetype']);
-        this.findBlock(cell.model);
-        //this.setState({selectedElement: this.state.workflow.stages[0].blocks[1]});
+        //this.findBlock(cell.model);
+        //this.setState({selectedCanElement: this.state.workflow.stages[0].blocks[1]});
       }
       console.log(JSON.stringify(this.cangraph.toJSON()));
     }
 
+    openPalModal(cell){
+      this.setState({palModalIsOpen: true, currentPalElement: cell});
+      this.setState({selectedPalElement: cell.model.attributes['witem']});
+    }
+
     findBlock(model){
       var name = model.attributes['wename'];
+      var item = model.attributes['witem'];
       for(var idx in this.state.workflow.stages){
         var stage = this.state.workflow.stages[idx];
         for(var idy in stage.blocks){
           var block = stage.blocks[idy];
           if(name == block.name){
-            this.setState({selectedElement: block});
+            this.setState({selectedCanElement: block});
             break;
           }
         }
       }
     }
 
-    closeModal() {
-      this.setState({modalIsOpen: false});
+    closeCanModal() {
+      this.setState({canModalIsOpen: false});
+    }
+
+    closePalModal() {
+      this.setState({palModalIsOpen: false});
+    }
+
+    removeFromGraph(){
+      this.state.currentCanElement.model.remove();
     }
 
     populateWorkflow(){
@@ -205,7 +240,7 @@ export class WorkflowJsContentComponent extends PureComponent {
     addStages(props, elements){
       for(var idx in this.state.workflow.stages){
         var sitem = this.state.workflow.stages[idx];
-        var stage = getStage(props.x, props.y, sitem.name);
+        var stage = getStage(props.x, props.y, sitem.name, sitem);
         elements.push(stage);
         this.cangraph.addCell(stage);
         props = this.updateCoordinates(props);
@@ -216,7 +251,7 @@ export class WorkflowJsContentComponent extends PureComponent {
     addBlocks(stage, elements, props){
       for(var idy in stage.blocks){
         var bitem = stage.blocks[idy];
-        var block = getBlockWithPorts(props.x, props.y, bitem.name);
+        var block = getBlockWithPorts(props.x, props.y, bitem.name, bitem);
         elements.push(block);
         this.cangraph.addCell(block);
         props = this.updateCoordinates(props);
@@ -286,7 +321,7 @@ export class WorkflowJsContentComponent extends PureComponent {
         var sitem = this.state.workflow.stages[idx];
         for(var idy in sitem.blocks){
           var bitem = sitem.blocks[idy];
-          var block = getBlockWithPorts(x, y, bitem.name);
+          var block = getBlockWithPorts(x, y, bitem.name, bitem);
           elements.push(block);
           this.palgraph.addCell(block);
           rowcount++;
@@ -299,7 +334,7 @@ export class WorkflowJsContentComponent extends PureComponent {
         }
       }
       var bitem = sitem.blocks[idy];
-      var block = getBlockWithPorts(x, y, "extra block from palette");
+      var block = getBlockWithPorts(x, y, "extra block from palette", {id: '122', name: 'extra block from palette' , description: '', properties: {}});
       elements.push(block);
       this.palgraph.addCell(block);
     }
@@ -314,30 +349,80 @@ export class WorkflowJsContentComponent extends PureComponent {
       this.cangraph.addCells(this.cancells);
     };
 
+    saveGraph(){
+      var gjson = this.cangraph.toJSON();
+      var workflow = {}, stages = [];
+      alert(gjson);
+      workflow['stages'] = stages;
+      for(var idx in gjson.cells){
+        var gelement = gjson.cells[idx];
+        if((gelement['wetype'] && gelement['wetype'] == 'stage')){
+          if(gelement.blocks){
+            gelement.blocks = [];
+          }
+          stages.push(gelement);
+        }
+      }
+    }
+
     render() {
-      const popover = (
-        <Popover id="modal-popover" title="popover">
-          very popover. such engagement
-        </Popover>
-      );
-      const tooltip = <Tooltip id="modal-tooltip">wow.</Tooltip>;
       return(
         <div style={{width : "100%"}}>
           <div id="canvas" ref="canvasholder"></div>
-          <button id="addCell" onClick={this.addCell}>Add Node</button>
-          <button id="save" type="button" class="btn btn-sm btn-info btn-flat pull-right">Save</button>
-          <button id="amend" type="button" class="btn btn-sm btn-info btn-flat pull-right">Amend</button>
-          <button id="info" type="button" class="btn btn-sm btn-info btn-flat pull-right">Info</button>
+          <div>
+            {/* <button id="addCell" onClick={this.addCell}>Add Node</button> */}
+            <button id="save" onClick={this.saveGraph} type="button" class="btn btn-sm btn-info btn-flat">Save</button>
+            <button id="amend" type="button" class="btn btn-sm btn-info btn-flat">Amend</button>
+            <button id="info" type="button" class="btn btn-sm btn-info btn-flat">Info</button>
+          </div>
           <div id="palette" ref="paletteholder"></div>
-            <Modal show={this.state.modalIsOpen} onHide={this.closeModal}>
+            <Modal show={this.state.canModalIsOpen} onHide={this.closeCanModal}>
               <Modal.Header closeButton>
-                <Modal.Title>{this.state.currentElement.textContent}</Modal.Title>
+                <Modal.Title>{this.state.selectedCanElement.name}</Modal.Title>
               </Modal.Header>
               <Modal.Body>
                 {/* <div className="container-fluid col-md-12"> */}
                   <div className="row">
                     <div className="col-md-6">
-                        <textarea value={this.state.selectedElement.description}></textarea>
+                        <textarea value={this.state.selectedCanElement.description}></textarea>
+                    </div>
+                    <div className="col-md-6">
+                      <Table responsive striped bordered condensed hover>
+                        <thead>
+                          <tr>
+                            <th>Property</th>
+                            <th>Value</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {
+                            Object.keys(this.state.selectedCanElement.properties).map(function(key, idx) {
+                              return (<tr>
+                                <td>{key}</td>
+                                <td>{this.state.selectedCanElement.properties[key]}</td>
+                              </tr>)
+                            }.bind(this))
+                          }
+                        </tbody>
+                      </Table>
+                    </div>
+                  </div>
+                {/* </div> */}
+              </Modal.Body>
+              <Modal.Footer>
+                <Button onClick={this.removeFromGraph}>Remove from workflow</Button>
+                <Button onClick={this.closeCanModal}>Close</Button>
+              </Modal.Footer>
+            </Modal>
+            <Modal show={this.state.palModalIsOpen} onHide={this.closePalModal}>
+              <Modal.Header closeButton>
+                <Modal.Title>{this.state.selectedPalElement.name}</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                {/* <div className="container-fluid col-md-12"> */}
+                  <div className="row">
+                    <div className="col-md-6">
+                        <textarea value={this.state.selectedPalElement.description}></textarea>
                     </div>
                     <div className="col-md-6">
                       <Table responsive striped bordered condensed hover>
@@ -349,10 +434,10 @@ export class WorkflowJsContentComponent extends PureComponent {
                         </thead>
                         <tbody>
                           {
-                            Object.keys(this.state.selectedElement.properties).map(function(key, idx) {
+                            Object.keys(this.state.selectedPalElement.properties).map(function(key, idx) {
                               return (<tr>
                                 <td>{key}</td>
-                                <td>{this.state.selectedElement.properties[key]}</td>
+                                <td>{this.state.selectedPalElement.properties[key]}</td>
                               </tr>)
                             }.bind(this))
                           }
@@ -363,7 +448,7 @@ export class WorkflowJsContentComponent extends PureComponent {
                 {/* </div> */}
               </Modal.Body>
               <Modal.Footer>
-                <Button onClick={this.closeModal}>Close</Button>
+                <Button onClick={this.closePalModal}>Close</Button>
               </Modal.Footer>
             </Modal>
         </div>
@@ -371,23 +456,25 @@ export class WorkflowJsContentComponent extends PureComponent {
     }
 }
 
-function getStage(posx, posy, name){
+function getStage(posx, posy, name, item){
   var istage = Stage({x: posx, y: posy, name: name});
   istage.prop('wetype', 'stage');
   istage.prop('weid', '');
   istage.prop('wename', name);
+  istage.prop('witem', item);
   return istage;
 }
 
-function getBlockWithPorts(posx, posy, name){
+function getBlockWithPorts(posx, posy, name, item){
   var iblock = BlockWithPorts({x: posx, y: posy, name: name, id: ''});
   iblock.prop('wetype', 'block');
   iblock.prop('weid', '');
   iblock.prop('wename', name);
+  iblock.prop('witem', item);
   return iblock;
 }
 
-function getBlock(posx, posy, name){
+function getBlock(posx, posy, name, item){
   return Block({x: posx, y: posy, name: name, id: ''});
 }
 

@@ -12,7 +12,11 @@
           "description" : "block 1 for stage 1",
           "properties" : {
             "name" : "hello",
-            "key" : "world"
+            "key" : "world",
+            "name1" : "hello",
+            "key1" : "world",
+            "name2" : "hello",
+            "key2" : "world"
           }
         },
         {
