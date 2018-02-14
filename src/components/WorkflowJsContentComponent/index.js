@@ -33,6 +33,8 @@ export class WorkflowJsContentComponent extends PureComponent {
         this.populateWorkflow = this.populateWorkflow.bind(this);
         this.updateCoordinates = this.updateCoordinates.bind(this);
         this.populatePalette = this.populatePalette.bind(this);
+        this.validateMagnet = this.validateMagnet.bind(this);
+        this.validateConnection = this.validateConnection.bind(this);
         this.checkIfElementExistsInGraph = this.checkIfElementExistsInGraph.bind(this);
         this.removeFromGraph = this.removeFromGraph.bind(this);
         this.saveGraph = this.saveGraph.bind(this);
@@ -79,7 +81,13 @@ export class WorkflowJsContentComponent extends PureComponent {
         model: this.cangraph,
         gridSize: 20,
         defaultRouter: { name: 'metro' },
-        clickThreshold: 1
+        clickThreshold: 1,
+        validateMagnet: function(cellView, magnet) {
+          return this.validateMagnet(cellView, magnet);
+        }.bind(this),
+        validateConnection: function(cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
+          return this.validateConnection(cellViewS, magnetS, cellViewT, magnetT, end, linkView);
+        }.bind(this)
       });
       this.palette = ReactDOM.findDOMNode(this.refs.paletteholder);
       this.palpaper = new joint.dia.Paper({
@@ -145,6 +153,31 @@ export class WorkflowJsContentComponent extends PureComponent {
         }
       }.bind(this));
 
+    }
+
+    validateMagnet(cellView, magnet) {
+      // Prevent links from ports that already have a link
+      //var port = magnet.getAttribute('port');
+      var links = this.cangraph.getConnectedLinks(cellView.model);
+      //alert(links.length);
+      if(links.length <= 1){
+        return true;
+      }else{
+        return false;
+      }
+      // Note that this is the default behaviour. Just showing it here for reference.
+      // Disable linking interaction for magnets marked as passive (see below `.inPorts circle`).
+      //return magnet.getAttribute('magnet') !== 'passive';
+    }
+
+    validateConnection(cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
+      var links = this.cangraph.getConnectedLinks(cellViewT.model);
+      //alert(links.length);
+      if(links.length <= 1){
+        return true;
+      }else{
+        return false;
+      }
     }
 
     checkIfElementExistsInGraph(cell){
@@ -354,6 +387,14 @@ export class WorkflowJsContentComponent extends PureComponent {
       var workflow = {}, stages = [];
       alert(gjson);
       workflow['stages'] = stages;
+      // use graph.getLinks() -  get all Links
+      // iterate the Links
+      // for each link get the source and target id
+      // using the source and target id get their elements
+      // check if the source is a 'stage'
+      // create a source element in json with the 'witem'
+      // iterate the links till the next source id is a 'stage'
+      // for each child of source create a block element in json using 'witem'
       for(var idx in gjson.cells){
         var gelement = gjson.cells[idx];
         if((gelement['wetype'] && gelement['wetype'] == 'stage')){
