@@ -18,7 +18,8 @@ export function BlockWithPorts (props) {
         'data-color': 'pink'
       }
     },
-    inPorts: ['center']
+    inPorts: ['center'],
+    outPorts: ['out']
   });
 }
 
