@@ -172,7 +172,15 @@ export class WorkflowJsContentComponent extends PureComponent {
 
     validateConnection(cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
       var links = this.cangraph.getConnectedLinks(cellViewT.model);
-      //alert(links.length);
+      //alert(links.length + " " + magnetS.getAttribute('port-group') + " " + cellViewT.model.isLink());
+      //do not allow linking starting from an inport
+      // if(magnetS.parentElement.parentElement.className.baseVal == 'inPorts'){
+      //   return false;
+      // }
+      // do not allow link target to be another link
+      if(cellViewT.model.isLink()){
+        return false;
+      }
       if(links.length <= 1){
         return true;
       }else{
