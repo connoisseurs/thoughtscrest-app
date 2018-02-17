@@ -9,6 +9,7 @@ import './joint.core.css';
 import './style.css';
 import $ from 'jquery';
 
+
 export class WorkflowJsContentComponent extends PureComponent {
     constructor(props) {
         super(props);
@@ -73,15 +74,19 @@ export class WorkflowJsContentComponent extends PureComponent {
                   });
               }
           )
+       joint.setTheme("material");
       this.canvas = ReactDOM.findDOMNode(this.refs.canvasholder);
       this.canpaper = new joint.dia.Paper({
         el: this.canvas,
         width: this.canvas.offsetWidth,
         height: this.canvas.offsetHeight,
         model: this.cangraph,
-        gridSize: 20,
-        defaultRouter: { name: 'metro' },
+        gridSize: 5,
+        defaultRouter: { name: 'orthogonal' },
         clickThreshold: 1,
+        drawGrid:true,
+        perpendicularLinks:true,
+        padding:10,
         validateMagnet: function(cellView, magnet) {
           return this.validateMagnet(cellView, magnet);
         }.bind(this),
@@ -89,6 +94,7 @@ export class WorkflowJsContentComponent extends PureComponent {
           return this.validateConnection(cellViewS, magnetS, cellViewT, magnetT, end, linkView);
         }.bind(this)
       });
+
       this.palette = ReactDOM.findDOMNode(this.refs.paletteholder);
       this.palpaper = new joint.dia.Paper({
         el: this.palette,
@@ -101,11 +107,11 @@ export class WorkflowJsContentComponent extends PureComponent {
       this.canpaper.on('cell:pointerclick', function(cell){
         this.openCanModal(cell);
       }.bind(this));
-      this.palpaper.on('cell:pointerclick', function(cell){
+        this.palpaper.on('cell:pointerclick', function(cell){
         this.openPalModal(cell);
       }.bind(this));
 
-      this.palpaper.on('cell:pointerdown', function(cellView, e, x, y) {
+        this.palpaper.on('cell:pointerdown', function(cellView, e, x, y) {
         if(!this.checkIfElementExistsInGraph(cellView)){
           $('body').append('<div id="flyPaper" ref="flypaper" style="position:fixed;z-index:100;opacity:.7;pointer-event:none;"></div>');
           var flyGraph = new joint.dia.Graph,
@@ -152,6 +158,28 @@ export class WorkflowJsContentComponent extends PureComponent {
           }.bind(this));
         }
       }.bind(this));
+        this.canpaper.$el.on('mousewheel DOMMouseScroll', function onMouseWheel(e) {
+            //function onMouseWheel(e){
+            e.preventDefault();
+            e = e.originalEvent;
+            console.log(e);
+            var delta = Math.max(-4, Math.min(4, (e.wheelDelta || -e.detail))) / 50;
+            var offsetX = (e.offsetX || e.clientX - $(this).offset().left);
+
+            var offsetY = (e.offsetY || e.clientY - $(this).offset().top);
+            var svgPoint = this.canpaper.svg.createSVGPoint();
+                svgPoint.x = offsetX;
+                svgPoint.y = offsetY;
+                var p = svgPoint.matrixTransform(this.canpaper.viewport.getCTM().inverse());
+
+            var newScale = joint.V(this.canpaper.viewport).scale().sx + delta;
+            console.log(' delta' + delta + ' ' + 'offsetX' + offsetX + 'offsety--' + offsetY + 'p' + p.x + 'newScale' + newScale)
+            if (newScale > 0.4 && newScale < 2) {
+                this.canpaper.setOrigin(0, 0);
+                this.canpaper.scale(newScale, newScale, p.x, p.y);
+            }
+
+        }.bind(this));
 
     }
 
@@ -250,8 +278,8 @@ export class WorkflowJsContentComponent extends PureComponent {
     }
 
     populateWorkflow(){
-      var x = 5, y = 5, ewidth = 140, offset = 50, pwidth = this.canvas.offsetWidth, pheight = this.canvas.offsetHeight;
-      var maxrowcount = Math.floor(pwidth / (ewidth + offset)), rowcount = 0;
+      var x = 4, y = 4, ewidth = 150, offset = 50, pwidth =this.canvas.offsetWidth, pheight = this.canvas.offsetHeight;
+      var maxrowcount = 4, rowcount = 0;
       var elements = [];
       var props = {};
 
@@ -261,8 +289,8 @@ export class WorkflowJsContentComponent extends PureComponent {
       props.y = y;
       props.ewidth = ewidth;
       props.offset = offset;
-      props.maxrowcount = maxrowcount;
-      props.reverse = false;
+      props.maxrowcount = 4;
+      props.reverse = true;
       props.dir = "ltr";
 
       this.addStart(props, elements);
@@ -355,8 +383,8 @@ export class WorkflowJsContentComponent extends PureComponent {
     }
 
     populatePalette() {
-      var x = 5, y = 5, ewidth = 140, offset = 10, pwidth = this.canvas.offsetWidth, pheight = this.canvas.offsetHeight;
-      var maxrowcount = Math.floor(pwidth / (ewidth + offset)), rowcount = 0;
+      var x = 5, y = 5, ewidth = 140, offset = 10, pwidth =this.palette.offsetWidth, pheight = this.palette.offsetHeight;
+      var maxrowcount = 1, rowcount = 0;
       var elements = [];
       for(var idx in this.state.workflow.stages){
         var sitem = this.state.workflow.stages[idx];
@@ -416,92 +444,101 @@ export class WorkflowJsContentComponent extends PureComponent {
 
     render() {
       return(
-        <div style={{width : "100%"}}>
-          <div id="canvas" ref="canvasholder"></div>
-          <div>
-            {/* <button id="addCell" onClick={this.addCell}>Add Node</button> */}
-            <button id="save" onClick={this.saveGraph} type="button" class="btn btn-sm btn-info btn-flat">Save</button>
-            <button id="amend" type="button" class="btn btn-sm btn-info btn-flat">Amend</button>
-            <button id="info" type="button" class="btn btn-sm btn-info btn-flat">Info</button>
-          </div>
-          <div id="palette" ref="paletteholder"></div>
+
+        <div >
+            <div>
+                {/* <button id="addCell" onClick={this.addCell}>Add Node</button> */}
+                <button id="save" onClick={this.saveGraph} type="button" class="btn btn-sm btn-info btn-flat">Save</button>
+                <button id="amend" type="button" class="btn btn-sm btn-info btn-flat">Amend</button>
+                <button id="info" type="button" class="btn btn-sm btn-info btn-flat">Info</button>
+            </div>
+
+            <div className={"row"}>
+                <div id="palette" className={"col-md-3"} ref="paletteholder">
+
+                </div>
+                    <div id="canvas" className={"col-md-9"} ref="canvasholder">
+
+                    </div>
             <Modal show={this.state.canModalIsOpen} onHide={this.closeCanModal}>
-              <Modal.Header closeButton>
-                <Modal.Title>{this.state.selectedCanElement.name}</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                {/* <div className="container-fluid col-md-12"> */}
-                  <div className="row">
-                    <div className="col-md-6">
-                        <textarea value={this.state.selectedCanElement.description}></textarea>
-                    </div>
-                    <div className="col-md-6">
-                      <Table responsive striped bordered condensed hover>
-                        <thead>
-                          <tr>
-                            <th>Property</th>
-                            <th>Value</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {
-                            Object.keys(this.state.selectedCanElement.properties).map(function(key, idx) {
-                              return (<tr>
-                                <td>{key}</td>
-                                <td>{this.state.selectedCanElement.properties[key]}</td>
-                              </tr>)
-                            }.bind(this))
-                          }
-                        </tbody>
-                      </Table>
-                    </div>
-                  </div>
-                {/* </div> */}
-              </Modal.Body>
-              <Modal.Footer>
-                <Button onClick={this.removeFromGraph}>Remove from workflow</Button>
-                <Button onClick={this.closeCanModal}>Close</Button>
-              </Modal.Footer>
-            </Modal>
-            <Modal show={this.state.palModalIsOpen} onHide={this.closePalModal}>
-              <Modal.Header closeButton>
-                <Modal.Title>{this.state.selectedPalElement.name}</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                {/* <div className="container-fluid col-md-12"> */}
-                  <div className="row">
-                    <div className="col-md-6">
-                        <textarea value={this.state.selectedPalElement.description}></textarea>
-                    </div>
-                    <div className="col-md-6">
-                      <Table responsive striped bordered condensed hover>
-                        <thead>
-                          <tr>
-                            <td>Property</td>
-                            <td>Value</td>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {
-                            Object.keys(this.state.selectedPalElement.properties).map(function(key, idx) {
-                              return (<tr>
-                                <td>{key}</td>
-                                <td>{this.state.selectedPalElement.properties[key]}</td>
-                              </tr>)
-                            }.bind(this))
-                          }
-                        </tbody>
-                      </Table>
-                    </div>
-                  </div>
-                {/* </div> */}
-              </Modal.Body>
-              <Modal.Footer>
-                <Button onClick={this.closePalModal}>Close</Button>
-              </Modal.Footer>
-            </Modal>
+                  <Modal.Header closeButton>
+                      <Modal.Title>{this.state.selectedCanElement.name}</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                      {/* <div className="container-fluid col-md-12"> */}
+                      <div className="row">
+                          <div className="col-md-6">
+                              <textarea value={this.state.selectedCanElement.description}></textarea>
+                          </div>
+                          <div className="col-md-6">
+                              <Table responsive striped bordered condensed hover>
+                                  <thead>
+                                  <tr>
+                                      <th>Property</th>
+                                      <th>Value</th>
+                                  </tr>
+                                  </thead>
+                                  <tbody>
+                                  {
+                                      Object.keys(this.state.selectedCanElement.properties).map(function(key, idx) {
+                                          return (<tr>
+                                              <td>{key}</td>
+                                              <td>{this.state.selectedCanElement.properties[key]}</td>
+                                          </tr>)
+                                      }.bind(this))
+                                  }
+                                  </tbody>
+                              </Table>
+                          </div>
+                      </div>
+                      {/* </div> */}
+                  </Modal.Body>
+                  <Modal.Footer>
+                      <Button onClick={this.removeFromGraph}>Remove from workflow</Button>
+                      <Button onClick={this.closeCanModal}>Close</Button>
+                  </Modal.Footer>
+              </Modal>
+              <Modal show={this.state.palModalIsOpen} onHide={this.closePalModal}>
+                  <Modal.Header closeButton>
+                      <Modal.Title>{this.state.selectedPalElement.name}</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                      {/* <div className="container-fluid col-md-12"> */}
+                      <div className="row">
+                          <div className="col-md-6">
+                              <textarea value={this.state.selectedPalElement.description}></textarea>
+                          </div>
+                          <div className="col-md-6">
+                              <Table responsive striped bordered condensed hover>
+                                  <thead>
+                                  <tr>
+                                      <td>Property</td>
+                                      <td>Value</td>
+                                  </tr>
+                                  </thead>
+                                  <tbody>
+                                  {
+                                      Object.keys(this.state.selectedPalElement.properties).map(function(key, idx) {
+                                          return (<tr>
+                                              <td>{key}</td>
+                                              <td>{this.state.selectedPalElement.properties[key]}</td>
+                                          </tr>)
+                                      }.bind(this))
+                                  }
+                                  </tbody>
+                              </Table>
+                          </div>
+                      </div>
+                      {/* </div> */}
+                  </Modal.Body>
+                  <Modal.Footer>
+                      <Button onClick={this.closePalModal}>Close</Button>
+                  </Modal.Footer>
+              </Modal>
+          </div>
+
         </div>
-      );
+        );
     }
 }
 
@@ -530,7 +567,7 @@ function getBlock(posx, posy, name, item){
 function getStart(posx, posy){
   return new joint.shapes.basic.Ellipse({
       position: { x: posx, y: posy },
-      size: { width: 100, height: 30 },
+      size: { width: 70, height: 40 },
       attrs: {
           ellipse: { fill: 'green' },
           text: { text: 'start' }
@@ -541,7 +578,7 @@ function getStart(posx, posy){
 function getEnd(posx, posy){
   return new joint.shapes.basic.Ellipse({
       position: { x: posx, y: posy },
-      size: { width: 100, height: 30 },
+      size: { width: 70, height: 40 },
       attrs: {
           ellipse: { fill: 'red' },
           text: { text: 'end' }

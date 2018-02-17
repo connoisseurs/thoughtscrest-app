@@ -14,7 +14,8 @@
     "react-render-html": "^0.6.0",
     "react-responsive-tabs": "^2.0.0",
     "react-router-dom": "^4.2.2",
-    "react-scripts": "1.1.0"
+    "react-scripts": "1.1.0",
+    "react-svg-pan-zoom": "^2.15.1"
   },
   "scripts": {
     "start": "react-scripts start",
