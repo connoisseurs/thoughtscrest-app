@@ -15,6 +15,7 @@
     "react-responsive-tabs": "^2.0.0",
     "react-router-dom": "^4.2.2",
     "react-scripts": "1.1.0",
+    "react-select": "^1.2.1",
     "react-svg-pan-zoom": "^2.15.1"
   },
   "scripts": {

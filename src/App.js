@@ -7,6 +7,7 @@ import WorkflowContentComponent from "./components/WorkflowContentComponent";
 import WorkflowJsContentComponent from "./components/WorkflowJsContentComponent";
 import AboutComponent from "./components/AboutComponent";
 import NotificationGridComponent from "./components/NotificationGridComponent";
+import RuleComponent from './components/RuleComponent';
 
 import { Switch, Route } from 'react-router-dom';
 import FormElementsComponent from "./components/FormElementsComponent";
@@ -27,6 +28,7 @@ class App extends Component {
                           <Route path='/workflowjs' component={WorkflowJsContentComponent}/>
                           <Route path='/notificationGrid' component={NotificationGridComponent}/>
                           <Route path='/formElements' component={FormElementsComponent}/>
+                          <Route path='/ruleEngine' component={RuleComponent}/>
                       </Switch>
                   </div>
                 </div>

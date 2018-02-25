@@ -51,6 +51,9 @@ class SideBarComponent extends Component {
                         <Link to="/formElements"><i class="fa fa-link"></i> <span>FormElements</span></Link>
                     </li>
                     <li class="treeview">
+                        <Link to="/ruleEngine"><i class="fa fa-link"></i> <span>Rule Management</span></Link>
+                    </li>
+                    <li class="treeview">
                         <a href="#"><i class="fa fa-link"></i> <span>Multilevel</span>
                             <span class="pull-right-container">
                 <i class="fa fa-angle-left pull-right"></i>
