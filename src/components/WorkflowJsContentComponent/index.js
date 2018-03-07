@@ -45,6 +45,8 @@ export class WorkflowJsContentComponent extends PureComponent {
         this.addBlocks = this.addBlocks.bind(this);
         this.addLinks = this.addLinks.bind(this);
         this.addEnd = this.addEnd.bind(this);
+        this.addLink = this.addLink.bind(this);
+        this.updateLink = this.updateLink.bind(this);
 
         this.openCanModal = this.openCanModal.bind(this);
         this.closeCanModal = this.closeCanModal.bind(this);
@@ -151,6 +153,7 @@ export class WorkflowJsContentComponent extends PureComponent {
               var s = flyShape.clone();
               s.position(x - target.left - offset.x, y - target.top - offset.y);
               this.cangraph.addCell(s);
+              this.updateLink(s);
             }
             $('body').off('mousemove.fly').off('mouseup.fly');
             flyShape.remove();
@@ -227,7 +230,7 @@ export class WorkflowJsContentComponent extends PureComponent {
         if((gelement['wetype'] && gelement['wetype'] == type)
           //&& (gelement['weid'] && gelement['weid'] == id)
           && (gelement['wename'] && gelement['wename'] == name)){
-          return true;
+          return false;
         }
       }
       return false;
@@ -274,7 +277,9 @@ export class WorkflowJsContentComponent extends PureComponent {
     }
 
     removeFromGraph(){
+      var nghs = this.cangraph.getNeighbors(this.state.currentCanElement.model);
       this.state.currentCanElement.model.remove();
+      this.addLink(nghs[0], nghs[1]);
     }
 
     populateWorkflow(){
@@ -297,6 +302,8 @@ export class WorkflowJsContentComponent extends PureComponent {
       this.addStages(props, elements);
       this.addEnd(props, elements);
       this.addLinks(elements);
+
+      this.setState({elements : elements});
     }
 
     addStart(props, elements){
@@ -348,6 +355,29 @@ export class WorkflowJsContentComponent extends PureComponent {
         });
         this.cangraph.addCell(link);
       }
+    }
+
+    updateLink(newElement){
+      var end = this.state.elements[this.state.elements.length - 1];
+      var endNgh = this.cangraph.getNeighbors(end)[0];
+      var link = this.cangraph.getConnectedLinks(endNgh, {outbound : true})[0];
+      link.remove();
+      this.addLink(endNgh, newElement);
+      this.addLink(newElement, end);
+    }
+
+    addLink(source, target){
+      var link = new joint.dia.Link({
+        source: {
+          id: source.id,
+          port: 'center'
+        },
+        target: {
+          id: target.id,
+          port: 'center'
+        }
+      });
+      this.cangraph.addCell(link);
     }
 
     updateCoordinates(props){
@@ -507,6 +537,7 @@ export class WorkflowJsContentComponent extends PureComponent {
                       <div className="row">
                           <div className="col-md-6">
                               <textarea value={this.state.selectedPalElement.description}></textarea>
+                              <input type="text" class="form-control" value={this.state.selectedPalElement.description} placeholder="Enter ..."/>
                           </div>
                           <div className="col-md-6">
                               <Table responsive striped bordered condensed hover>
@@ -520,8 +551,8 @@ export class WorkflowJsContentComponent extends PureComponent {
                                   {
                                       Object.keys(this.state.selectedPalElement.properties).map(function(key, idx) {
                                           return (<tr>
-                                              <td>{key}</td>
-                                              <td>{this.state.selectedPalElement.properties[key]}</td>
+                                              <td><input type="text" value={key}></input></td>
+                                              <td><input type="text" value={this.state.selectedPalElement.properties[key]}></input></td>
                                           </tr>)
                                       }.bind(this))
                                   }

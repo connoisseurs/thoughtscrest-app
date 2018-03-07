@@ -126,7 +126,7 @@ Vertex markers are `<circle>` elements that appear at connection vertex position
    cursor: move;
 }
 .marker-arrowheads {
-   opacity: 0;
+   opacity: 1;
    cursor: move;
    cursor: -webkit-grab;
    cursor: -moz-grab;
