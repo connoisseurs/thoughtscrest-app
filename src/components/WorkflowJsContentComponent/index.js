@@ -39,6 +39,7 @@ export class WorkflowJsContentComponent extends PureComponent {
         this.checkIfElementExistsInGraph = this.checkIfElementExistsInGraph.bind(this);
         this.removeFromGraph = this.removeFromGraph.bind(this);
         this.saveGraph = this.saveGraph.bind(this);
+        this.rearrange = this.rearrange.bind(this);
 
         this.addStart = this.addStart.bind(this);
         this.addStages = this.addStages.bind(this);
@@ -240,10 +241,6 @@ export class WorkflowJsContentComponent extends PureComponent {
       if(cell.model.isElement() && cell.model.attributes['wetype'] === 'block'){
         this.setState({canModalIsOpen: true, currentCanElement: cell});
         this.setState({selectedCanElement: cell.model.attributes['witem']});
-        // alert(cell.model.isElement());
-        // alert(cell.model.attributes['wetype']);
-        //this.findBlock(cell.model);
-        //this.setState({selectedCanElement: this.state.workflow.stages[0].blocks[1]});
       }
       console.log(JSON.stringify(this.cangraph.toJSON()));
     }
@@ -448,28 +445,53 @@ export class WorkflowJsContentComponent extends PureComponent {
       this.cangraph.addCells(this.cancells);
     };
 
+    rearrange(){
+      var x = 4, y = 4, ewidth = 150, offset = 50, pwidth = this.canvas.offsetWidth, pheight = this.canvas.offsetHeight;
+      var maxrowcount = 4, rowcount = 0;
+      var elements = [];
+      var props = {};
+
+      props.pwidth = pwidth;
+      props.rowcount = rowcount;
+      props.x = x;
+      props.y = y;
+      props.ewidth = ewidth;
+      props.offset = offset;
+      props.maxrowcount = 4;
+      props.reverse = true;
+      props.dir = "ltr";
+
+      //process start and its neighbour separately
+      var element = this.cangraph.getElements()[0];
+      element.position(props.x, props.y);
+      props = this.updateCoordinates(props);
+      var links = this.cangraph.getLinks();
+      for(var idx in links){
+        var link = links[idx];
+        var element = link.getTargetElement();
+        element.position(props.x, props.y);
+        props = this.updateCoordinates(props);
+      }
+    }
+
     saveGraph(){
-      var gjson = this.cangraph.toJSON();
       var workflow = {}, stages = [];
-      alert(gjson);
-      workflow['stages'] = stages;
-      // use graph.getLinks() -  get all Links
-      // iterate the Links
-      // for each link get the source and target id
-      // using the source and target id get their elements
-      // check if the source is a 'stage'
-      // create a source element in json with the 'witem'
-      // iterate the links till the next source id is a 'stage'
-      // for each child of source create a block element in json using 'witem'
-      for(var idx in gjson.cells){
-        var gelement = gjson.cells[idx];
-        if((gelement['wetype'] && gelement['wetype'] == 'stage')){
-          if(gelement.blocks){
-            gelement.blocks = [];
-          }
-          stages.push(gelement);
+      var links = this.cangraph.getLinks();
+      for(var idx in links){
+        var link = links[idx];
+        var element = link.getTargetElement();
+        var attributes = element.attributes;
+        if((attributes.wetype && attributes.wetype == 'stage')){
+            var stage = attributes.witem;
+            stage.blocks = [];
+            stages.push(stage);
+        }else{
+            var block = attributes.witem;
+            stages[stages.length - 1].blocks.push(block);
         }
       }
+      workflow['stages'] = stages;
+      console.log("workflow " + JSON.stringify(workflow));
     }
 
     render() {
@@ -478,6 +500,7 @@ export class WorkflowJsContentComponent extends PureComponent {
         <div >
             <div>
                 {/* <button id="addCell" onClick={this.addCell}>Add Node</button> */}
+                <button id="rearrange" onClick={this.rearrange} type="button" class="btn btn-sm btn-info btn-flat">Rearrange</button>
                 <button id="save" onClick={this.saveGraph} type="button" class="btn btn-sm btn-info btn-flat">Save</button>
                 <button id="amend" type="button" class="btn btn-sm btn-info btn-flat">Amend</button>
                 <button id="info" type="button" class="btn btn-sm btn-info btn-flat">Info</button>
