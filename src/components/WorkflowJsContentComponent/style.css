@@ -108,3 +108,23 @@ button {
   margin: 5px 0;
   cursor: pointer;
 }
+
+.link-tools .tool-remove {
+  display: none
+}
+
+.link-tools .tool-options {
+  display: none
+}
+
+.link .connection-wrap {
+    display: none
+}
+
+.marker-vertices {
+    display: none
+}
+
+.marker-source {
+  display: none
+}

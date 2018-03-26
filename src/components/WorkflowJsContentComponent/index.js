@@ -86,6 +86,19 @@ export class WorkflowJsContentComponent extends PureComponent {
         model: this.cangraph,
         gridSize: 5,
         defaultRouter: { name: 'orthogonal' },
+        defaultLink: new joint.dia.Link({
+        markup: [
+            '<path class="connection" stroke="black" d="M 0 0 0 0"/>',
+           // '<path class="marker-source" fill="none" stroke="none" d="0 0 0 0"/>',
+             '<path class="marker-target" fill="black" stroke="black" d="M 10 0 L 0 5 L 10 10 z"/>',
+            '<path class="connection-wrap" d="M 0 0 0 0"/>',
+            '<g class="marker-vertices"/>',
+            //'<g class="marker-arrowheads"/>'
+          ].join(''),
+        }),
+        interactive: {
+          vertexAdd: false
+        },
         clickThreshold: 1,
         drawGrid:true,
         perpendicularLinks:true,
@@ -340,7 +353,7 @@ export class WorkflowJsContentComponent extends PureComponent {
 
     addLinks(elements){
       for(var idz = 0; idz < elements.length - 1;idz++){
-        var link = new joint.dia.Link({
+        var link = this.canpaper.getDefaultLink().set({
           source: {
             id: elements[idz].id,
             port: 'center'
